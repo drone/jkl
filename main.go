@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	//directory where Jekyll will look to transform files
+	// directory where Jekyll will look to transform files
 	source = flag.String("source", "", "")
 
 	// directory where Jekyll will write files to
@@ -20,6 +20,9 @@ var (
 
 	// the port that the Jekyll server will run on
 	port = flag.String("server_port", ":4000", "")
+
+	// deploys the website to S3
+	deploy = flag.Bool("s3", false, "")
 
 	// runs Jekyll with verbose output if True
 	verbose = flag.Bool("verbose", false, "")
@@ -66,6 +69,22 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Deploys the static website to S3
+	if *deploy {
+		// Read the S3 configuration details
+		path := filepath.Join(site.Src, "_jekyll_s3.yml")
+		conf, err := ParseDeployConfig(path)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		
+		if err := site.Deploy(conf.Key, conf.Secret, conf.Bucket); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
+
 	// If the server option is enabled, launch a webserver
 	if *server {
 
@@ -90,6 +109,12 @@ func main() {
 	os.Exit(0)
 }
 
+func logf(msg string, args ...interface{}) {
+	if *verbose {
+		println(fmt.Sprintf(msg, args...))
+	}
+}
+
 var usage = func() {
 	fmt.Println(`Usage: jkl [OPTION]... [SOURCE]
 
@@ -97,13 +122,14 @@ var usage = func() {
       --destination    changes the dir where Jekyll will write files to
       --server         starts a server that will host your _site directory
       --server-port    changes the port that the Jekyll server will run on
+      --s3             copies the _site directory to s3
   -v, --verbose        runs Jekyll with verbose output
   -h, --help           display this help and exit
 
 Examples:
-  jkl                       generates site from current working dir
-  jkl --server              generates site and serves at localhost:4000
-  jkl /home/ubutnu/mysite   generates site from source dir /home/ubuntu/mysite
+  jkl                 generates site from current working dir
+  jkl --server        generates site and serves at localhost:4000
+  jkl /path/to/site   generates site from source dir /path/to/site
 
 Report bugs to <https://github.com/bradrydzewski/jkl/issues>
 Jekyll home page: <https://github.com/bradrydzewski/jkl>`)

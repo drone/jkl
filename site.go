@@ -4,10 +4,20 @@ import (
 	"bytes"
 	"github.com/russross/blackfriday"
 	"io/ioutil"
+	"launchpad.net/goamz/aws"
+	"launchpad.net/goamz/s3"
+	"mime"
 	"os"
 	"path/filepath"
 	"text/template"
 	"time"
+)
+
+var (
+	MsgCopyingFile  = "Copying File: %s"
+	MsgGenerateFile = "Generating Page: %s"
+	MsgUploadFile   = "Uploading: %s"
+	MsgUsingConfig  = "Loading Config: %s"
 )
 
 type Site struct {
@@ -24,7 +34,9 @@ type Site struct {
 func NewSite(src, dest string) (*Site, error) {
 
 	// Parse the _config.yml file
-	conf, err := ParseConfig(filepath.Join(src, "_config.yml"))
+	path := filepath.Join(src, "_config.yml")
+	conf, err := ParseConfig(path)
+	logf(MsgUsingConfig, path)
 	if err != nil {
 		return nil, err
 	}
@@ -67,6 +79,32 @@ func (s *Site) Generate() error {
 	if err := s.writeStatic(); err != nil { return err }
 
 	return nil
+}
+
+// Deploys a site to S3.
+func (s *Site) Deploy(user, pass, url string) error {
+
+	auth := aws.Auth{user, pass}
+	b := s3.New(auth, aws.USEast).Bucket(url)
+
+	// walks _site directory and uploads file to S3
+	walker := func(fn string, fi os.FileInfo, err error) error {
+		if fi.IsDir() {
+			return nil
+		}
+
+		rel, _ := filepath.Rel(s.Dest, fn)
+		typ := mime.TypeByExtension(filepath.Ext(rel))
+		content, err := ioutil.ReadFile(fn)
+		logf(MsgUploadFile, rel)
+		if err != nil {
+			return err
+		}
+
+		return b.Put(rel, content, typ, s3.PublicRead)
+	}
+
+	return filepath.Walk(s.Dest, walker)
 }
 
 // Helper function to traverse the source directory and identify all posts,
@@ -171,6 +209,7 @@ func (s *Site) writePages() error {
 
 		var buf bytes.Buffer
 		s.templ.ExecuteTemplate(&buf, layout, data)
+		logf(MsgGenerateFile, url)
 		if err := ioutil.WriteFile(f, buf.Bytes(), 0644); err != nil {
 			return err
 		}
@@ -187,6 +226,7 @@ func (s *Site) writeStatic() error {
 	for _, file := range s.files {
 		from := filepath.Join(s.Src, file)
 		to   := filepath.Join(s.Dest, file)
+		logf(MsgCopyingFile, file)
 		if err := copyTo(from, to); err != nil {
 			return err
 		}
