@@ -24,6 +24,15 @@ var (
 	// deploys the website to S3
 	deploy = flag.Bool("s3", false, "")
 
+	// s3 access key
+	s3key = flag.String("s3_key", "", "")
+
+	// s3 secret key
+	s3secret = flag.String("s3_secret", "", "")
+
+	// s3 bucket name
+	s3bucket = flag.String("s3_bucket", "", "")
+
 	// runs Jekyll with verbose output if True
 	verbose = flag.Bool("verbose", false, "")
 
@@ -71,12 +80,20 @@ func main() {
 
 	// Deploys the static website to S3
 	if *deploy {
-		// Read the S3 configuration details
-		path := filepath.Join(site.Src, "_jekyll_s3.yml")
-		conf, err := ParseDeployConfig(path)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+
+		var conf *DeployConfig
+		// Read the S3 configuration details if not provided as
+		// command line
+		if *s3key == "" {
+			path := filepath.Join(site.Src, "_jekyll_s3.yml")
+			conf, err = ParseDeployConfig(path)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		} else {
+			// else use the command line args
+			conf = &DeployConfig{ *s3key, *s3secret, *s3bucket }
 		}
 		
 		if err := site.Deploy(conf.Key, conf.Secret, conf.Bucket); err != nil {
@@ -123,11 +140,14 @@ var usage = func() {
       --server         starts a server that will host your _site directory
       --server-port    changes the port that the Jekyll server will run on
       --s3             copies the _site directory to s3
+      --s3_key         aws access key use for s3 authentication
+      --s3_secret      aws secret key use for s3 authentication
+      --s3_bucket      name of the s3 bucket
   -v, --verbose        runs Jekyll with verbose output
   -h, --help           display this help and exit
 
 Examples:
-  jkl                 generates site from current working dir
+  jkl                 generates site from current working directory
   jkl --server        generates site and serves at localhost:4000
   jkl /path/to/site   generates site from source dir /path/to/site
 
