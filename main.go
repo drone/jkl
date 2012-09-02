@@ -31,6 +31,8 @@ var (
 func main() {
 
 	// Parse the input parameters
+	flag.BoolVar(help, "h", false, "")
+	flag.BoolVar(verbose, "v", false, "")
 	flag.Usage = usage
 	flag.Parse()
 
@@ -91,12 +93,12 @@ func main() {
 var usage = func() {
 	fmt.Println(`Usage: jkl [OPTION]... [SOURCE]
 
-  --source         changes the dir where Jekyll will look to transform files
-  --destination    changes the dir where Jekyll will write files to
-  --server         starts a server that will host your _site directory
-  --server-port    changes the port that the Jekyll server will run on
-  --verbose        runs Jekyll with verbose output
-  --help           display this help and exit
+      --source         changes the dir where Jekyll will look to transform files
+      --destination    changes the dir where Jekyll will write files to
+      --server         starts a server that will host your _site directory
+      --server-port    changes the port that the Jekyll server will run on
+  -v, --verbose        runs Jekyll with verbose output
+  -h, --help           display this help and exit
 
 Examples:
   jkl                       generates site from current working dir
