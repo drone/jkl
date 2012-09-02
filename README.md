@@ -38,8 +38,13 @@ Once you have compiled `jkl` you can install with the following command:
 sudo install -t /usr/local/bin jkl
 ```
 
-by Jekyll. The same will happen for any `.html` or `.markdown` file in your
-site's root directory.
+If you are running x64 linux you can download and install the pre-compiled
+binary:
+
+```sh
+wget https://github.com/downloads/bradrydzewski/jkl/jkl
+sudo install -t /usr/local/bin jkl
+```
 
 ### Usage
 
