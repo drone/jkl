@@ -11,9 +11,13 @@ Notable similarities between jkl and Jekyll:
 Notable differences between jkl and Jekyll:
 
 * Uses [Go templates](http://www.golang.orgpkg/text/template)
-* Ingores Front-End YAML matter in templates
+* Only supports Front-End YAML matter in markup files
 * Only processes pages and posts with .html, .markdown or .md extension
 * No plugin support
+
+Additional features:
+
+* Deploy to S3
 
 --------------------------------------------------------------------------------
 
@@ -25,11 +29,13 @@ the following dependencies:
 ```
 go get github.com/russross/blackfriday
 go get launchpad.net/goyaml
+go get launchpad.net/goamz/aws
+go get launchpad.net/goamz/s3
 ```
 Once you have compiled `jkl` you can install with the following command:
 
 ```sh
-install -t /usr/local/bin jkl
+sudo install -t /usr/local/bin jkl
 ```
 
 by Jekyll. The same will happen for any `.html` or `.markdown` file in your
@@ -44,6 +50,7 @@ Usage: jkl [OPTION]... [SOURCE]
       --destination    changes the dir where Jekyll will write files to
       --server         starts a server that will host your _site directory
       --server-port    changes the port that the Jekyll server will run on
+      --s3             copies the _site directory to s3
   -v, --verbose        runs Jekyll with verbose output
   -h, --help           display this help and exit
 
@@ -54,7 +61,21 @@ Examples:
 
 ```
 
-### Docs
+### Deployment
+
+In order to deploy to S3 you must include a `_jekyll_s3.yml` file in your
+site's root directory that specifies your AWS key, secret and bucket:
+
+```
+s3_id: YOUR_AWS_S3_ACCESS_KEY_ID
+s3_secret: YOUR_AWS_S3_SECRET_ACCESS_KEY
+s3_bucket: your.blog.bucket.com
+```
+
+Run `jkl --s3`
+
+### Documentation
 
 See the official [Jekyll wiki](https://github.com/mojombo/jekyll/wiki)
 ... just remember that you are using Go templates instead of Liquid templates.
+
