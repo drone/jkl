@@ -10,7 +10,7 @@ Notable similarities between jkl and Jekyll:
 
 Notable differences between jkl and Jekyll:
 
-* Uses [Go templates](http://www.golang.orgpkg/text/template)
+* Uses [Go templates](http://www.golang.org/pkg/text/template)
 * Only supports Front-End YAML matter in markup files
 * Only processes pages and posts with .html, .markdown or .md extension
 * No plugin support
