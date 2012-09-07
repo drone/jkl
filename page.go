@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"launchpad.net/goyaml"
+	"path/filepath"
 	"strings"
 )
 
@@ -31,8 +32,12 @@ func parsePage(fn string, c []byte) (Page, error) {
 		return nil, err
 	}
 
+	ext := filepath.Ext(fn)
+	ext_output := ".html"
+	page["ext"] = ext
+	page["output_ext"] = ext_output
 	page["id"] = removeExt(fn)
-	page["url"] = replaceExt(fn, ".html")
+	page["url"] = replaceExt(fn, ext_output)
 	page["content"] = parseContent(c)
 
 	if page["layout"] == "" {
@@ -136,6 +141,11 @@ func (p Page) GetTitle() string {
 // e.g. /2008/12/14/my-post.html
 func (p Page) GetUrl() string {
 	return p.GetString("url")
+}
+
+// Gets the Extension of the File (.html, .md, etc)
+func (p Page) GetExt() string {
+	return p.GetString("ext")
 }
 
 // Gets the un-rendered content of the Page.

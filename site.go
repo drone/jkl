@@ -197,14 +197,20 @@ func (s *Site) writePages() error {
 			return err
 		}
 
-		// render the markup
-		c := blackfriday.MarkdownCommon(raw)
+		// if markdown, need to convert to html
+		// otherwise just convert raw html to a string
+		var content string
+		if isMarkdown(page.GetExt()) {
+			content = string(blackfriday.MarkdownCommon(raw))
+		} else {
+			content = string(raw)
+		}
 
 		//data passed in to each template
 		data := map[string]interface{} {
 			"site": s.Conf,
 			"page": page,
-			"content" : string(c),
+			"content" : content,
 		}
 
 		var buf bytes.Buffer
