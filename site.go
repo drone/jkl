@@ -157,12 +157,17 @@ func (s *Site) read() error {
 
 	// Walk the diretory recursively to get a list of all posts,
 	// pages, templates and static files.
-	if err := filepath.Walk(s.Src, walker); err != nil {
+	err := filepath.Walk(s.Src, walker)
+	if err != nil {
 		return err
 	}
 
 	// Compile all templates found
-	s.templ = template.Must(template.ParseFiles(layouts...))
+	//s.templ = template.Must(template.ParseFiles(layouts...))
+	s.templ, err = template.New("layouts").Funcs(funcMap).ParseFiles(layouts...)
+	if err != nil {
+		return err
+	}
 
 	// Add the posts, timestamp, etc to the Site Params
 	s.Conf.Set("posts", s.posts)
