@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var (
@@ -116,7 +117,14 @@ func main() {
 
 		// Create the handler to serve from the filesystem
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			path := filepath.Clean(r.URL.Path)
+			base := site.Conf.GetString("baseurl")
+			path := r.URL.Path
+			pathList := filepath.SplitList(path)
+			if len(pathList) > 0 && pathList[0] == base {
+				path = strings.Join(pathList[len(pathList):], "/")
+			}
+
+			path = filepath.Clean(path)
 			path = filepath.Join(dest, path)
 			http.ServeFile(w, r, path)
 		})

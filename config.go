@@ -19,6 +19,14 @@ func (c Config) Get(key string) interface{} {
 	return c[key]
 }
 
+// Gets a parameter value as a string. If none exists return an empty string.
+func (c Config) GetString(key string) (str string) {
+	if v, ok := c[key]; ok {
+		str = v.(string)
+	}
+	return
+}
+
 // ParseConfig will parse a YAML file at the given path and return
 // a key-value Config structure.
 //
