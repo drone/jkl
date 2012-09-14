@@ -33,7 +33,12 @@ func parsePage(fn string, c []byte) (Page, error) {
 	}
 
 	ext := filepath.Ext(fn)
-	ext_output := ".html"
+	ext_output := ext
+	// if the file is markdown, change to html extension
+	if isMarkdown(fn) {
+		ext_output = ".html"
+	}
+
 	page["ext"] = ext
 	page["output_ext"] = ext_output
 	page["id"] = removeExt(fn)

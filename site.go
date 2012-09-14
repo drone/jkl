@@ -193,6 +193,7 @@ func (s *Site) writePages() error {
 		url := page.GetUrl()
 		raw := page.GetContent()
 		layout := page.GetLayout()
+		layoutNil := layout == "" || layout == "nil"
 		layout = appendExt(layout, ".html")
 
 		// make sure the posts's parent dir exists
@@ -218,8 +219,19 @@ func (s *Site) writePages() error {
 			"content" : content,
 		}
 
+		// write the template to a buffer
+		// NOTE: if template is nil or empty, then we should parse the
+		//       content as if it were a template
 		var buf bytes.Buffer
-		s.templ.ExecuteTemplate(&buf, layout, data)
+		if layoutNil {
+			t, err := s.templ.New(url).Parse(content);
+			if err != nil { return err }
+			err = t.ExecuteTemplate(&buf, url, data);
+			if err != nil { return err }
+		} else {
+			s.templ.ExecuteTemplate(&buf, layout, data)
+		}
+
 		logf(MsgGenerateFile, url)
 		if err := ioutil.WriteFile(f, buf.Bytes(), 0644); err != nil {
 			return err

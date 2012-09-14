@@ -55,9 +55,10 @@ func isTemplate(fn string) bool {
 }
 
 // Return True if the markup is HTML.
+// TODO change this to isMarkup and add .xml, .rss, .atom
 func isHtml(fn string) bool {
 	switch filepath.Ext(fn) {
-	case ".html", ".htm" :
+	case ".html", ".htm", ".xml", ".rss", ".atom" :
 		return true
 	}
 	return false
