@@ -4,14 +4,14 @@ based on [Jekyll](https://github.com/mojombo/jekyll)
 Notable similarities between jkl and Jekyll:
 
 * Directory structure
-* Use of Front-End YAML matter in Pages and Posts
+* Use of YAML front matter in Pages and Posts
 * Availability of `site`, `content`, `page` and `posts` variables in templates
 * Copies all static files into destination directory
 
 Notable differences between jkl and Jekyll:
 
 * Uses [Go templates](http://www.golang.org/pkg/text/template)
-* Only supports Front-End YAML matter in markup files
+* Only supports YAML front matter in markup files
 * Only processes pages and posts with .html, .markdown or .md extension
 * No plugin support
 
@@ -51,6 +51,7 @@ sudo install -t /usr/local/bin jkl
 ```
 Usage: jkl [OPTION]... [SOURCE]
 
+      --base-url       serve website from a given base URL
       --source         changes the dir where Jekyll will look to transform files
       --destination    changes the dir where Jekyll will write files to
       --server         starts a server that will host your _site directory

@@ -24,6 +24,9 @@ var (
 	// deploys the website to S3
 	deploy = flag.Bool("s3", false, "")
 
+	// serves the website from the specified base url
+	baseurl = flag.String("base-url", "", "")
+
 	// s3 access key
 	s3key = flag.String("s3_key", "", "")
 
@@ -71,6 +74,9 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	// Set any site variables that were overriden / provided in the cli args
+	if *baseurl != "" || site.Conf.Get("baseurl") == nil { site.Conf.Set("baseurl", *baseurl) }
 
 	// Generate the static website
 	if err := site.Generate(); err != nil {
@@ -135,6 +141,7 @@ func logf(msg string, args ...interface{}) {
 var usage = func() {
 	fmt.Println(`Usage: jkl [OPTION]... [SOURCE]
 
+      --base-url       serve website from a given base URL
       --source         changes the dir where Jekyll will look to transform files
       --destination    changes the dir where Jekyll will write files to
       --server         starts a server that will host your _site directory
