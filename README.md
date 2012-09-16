@@ -69,6 +69,13 @@ Examples:
 
 ```
 
+### Auto Generation
+
+If you are running the website in server mode, with the `--server` flag, you can
+also instruct `jkl` to auto-recompile you website by adding the `--auto` flag.
+
+NOTE: this feature is only available on Linux
+
 ### Deployment
 
 In order to deploy to S3 you must include a `_jekyll_s3.yml` file in your
