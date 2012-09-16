@@ -1,12 +1,15 @@
 package main
 
 import (
+	"github.com/dersebi/golang_exp/exp/inotify"
+
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 var (
@@ -21,6 +24,9 @@ var (
 
 	// the port that the Jekyll server will run on
 	port = flag.String("server_port", ":4000", "")
+
+	// re-generates the site when files are modified.
+	auto = flag.Bool("auto", false, "")
 
 	// deploys the website to S3
 	deploy = flag.Bool("s3", false, "")
@@ -43,6 +49,9 @@ var (
 	// displays the help / usage if True
 	help = flag.Bool("help", false, "")
 )
+
+// Mutex used when doing auto-builds
+var mu sync.RWMutex
 
 func main() {
 
@@ -109,6 +118,13 @@ func main() {
 		}
 	}
 
+	// If the auto option is enabled, use inotify to watch
+	// and re-generate the site if files change.
+	if *auto {
+		fmt.Printf("Listening for changes to %s\n", site.Src)
+		go watch(site)
+	}
+
 	// If the server option is enabled, launch a webserver
 	if *server {
 
@@ -117,6 +133,9 @@ func main() {
 
 		// Create the handler to serve from the filesystem
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			mu.RLock()
+			defer mu.RUnlock()
+
 			base := site.Conf.GetString("baseurl")
 			path := r.URL.Path
 			pathList := filepath.SplitList(path)
@@ -140,6 +159,46 @@ func main() {
 	os.Exit(0)
 }
 
+func watch(site *Site) {
+
+	// Setup the inotify watcher
+	watcher, err := inotify.NewWatcher()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Only the events we care about
+	const flags = inotify.IN_MODIFY | inotify.IN_DELETE | inotify.IN_CREATE | inotify.IN_MOVE
+
+	// Get recursive list of directories to watch
+	for _, path := range dirs(site.Src) {
+		if err := watcher.AddWatch(path, flags); err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+
+	for {
+		select {
+		case ev := <-watcher.Event:
+			// Ignore changes to the _site directoy, hidden, or temp files		
+			if !strings.HasPrefix(ev.Name, site.Dest) && !isHiddenOrTemp(ev.Name) {
+				fmt.Println("Event:", ev.Name)
+				recompile(site)
+			}
+		case err := <-watcher.Error:
+			fmt.Println("inotify error:", err)
+		}
+	}
+}
+
+func recompile(site *Site) {
+	mu.Lock()
+	defer mu.Unlock()
+	site.Generate()
+}
+
 func logf(msg string, args ...interface{}) {
 	if *verbose {
 		println(fmt.Sprintf(msg, args...))
@@ -149,6 +208,7 @@ func logf(msg string, args ...interface{}) {
 var usage = func() {
 	fmt.Println(`Usage: jkl [OPTION]... [SOURCE]
 
+      --auto           re-generates the site when files are modified
       --base-url       serve website from a given base URL
       --source         changes the dir where Jekyll will look to transform files
       --destination    changes the dir where Jekyll will write files to

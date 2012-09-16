@@ -31,6 +31,7 @@ go get github.com/russross/blackfriday
 go get launchpad.net/goyaml
 go get launchpad.net/goamz/aws
 go get launchpad.net/goamz/s3
+go get github.com/dersebi/golang_exp/exp/inotify
 ```
 Once you have compiled `jkl` you can install with the following command:
 
@@ -51,6 +52,7 @@ sudo install -t /usr/local/bin jkl
 ```
 Usage: jkl [OPTION]... [SOURCE]
 
+      --auto           re-generates the site when files are modified
       --base-url       serve website from a given base URL
       --source         changes the dir where Jekyll will look to transform files
       --destination    changes the dir where Jekyll will write files to

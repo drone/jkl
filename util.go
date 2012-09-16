@@ -105,6 +105,26 @@ func isStatic(fn string) bool {
 	return !strings.HasPrefix(fn, "_")
 }
 
+// Returns an recursive list of all child directories
+func dirs(path string) (paths []string) {
+	site := filepath.Join(path, "_site")
+	filepath.Walk(path, func(fn string, fi os.FileInfo, err error) error {
+		switch {
+		case err != nil :
+			return nil
+		case fi.IsDir() == false:
+			return nil
+		case strings.HasPrefix(fn, site):
+			return nil
+		}
+
+		paths = append(paths, fn)
+		return nil
+	})
+
+	return
+}
+
 // Removes the files extension. If the file has no extension the string is
 // returned without modification.
 func removeExt(fn string) string {
