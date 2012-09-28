@@ -56,6 +56,15 @@ func NewSite(src, dest string) (*Site, error) {
 	return &site, nil
 }
 
+// Reloads the site into memory
+func (s *Site) Reload() error {
+	s.posts = []Page{}
+	s.pages = []Page{}
+	s.files = []string{}
+	s.templ = nil
+	return s.read()
+}
+
 // Prepares the source directory for site generation
 func (s *Site) Prep() error {
 	return os.MkdirAll(s.Dest, 0755)
@@ -100,8 +109,16 @@ func (s *Site) Deploy(user, pass, url string) error {
 		if err != nil {
 			return err
 		}
+		
+		// try to upload the file ... sometimes this fails due to amazon
+		// issues. If so, we'll re-try
+		if err := b.Put(rel, content, typ, s3.PublicRead); err != nil {
+			time.Sleep(100*time.Millisecond) // sleep so that we don't immediately retry
+			return b.Put(rel, content, typ, s3.PublicRead)
+		}
 
-		return b.Put(rel, content, typ, s3.PublicRead)
+		// file upload was a success, return nil
+		return nil
 	}
 
 	return filepath.Walk(s.Dest, walker)

@@ -129,7 +129,7 @@ func main() {
 	if *server {
 
 		// Change the working directory to the _site directory
-		os.Chdir(dest)
+		//os.Chdir(dest)
 
 		// Create the handler to serve from the filesystem
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -196,6 +196,7 @@ func watch(site *Site) {
 func recompile(site *Site) {
 	mu.Lock()
 	defer mu.Unlock()
+	site.Reload()
 	site.Generate()
 }
 
