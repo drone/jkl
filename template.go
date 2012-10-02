@@ -2,23 +2,27 @@ package main
 
 import (
 	"strings"
+	"time"
 )
 
 // Additional functions available in Jekyll templates
 var funcMap = map[string]interface{} {
-	"capitalize"    : capitalize,
-	"downcase"      : lower,
-	"eq"            : eq,
-	"newline_to_br" : newlineToBreak,
-	"replace"       : replace,
-	"replace_first" : replaceFirst,
-	"remove"        : remove,
-	"remove_first"  : removeFirst,
-	"split"         : split,
-	"strip_newlines": stripNewlines,
-	"truncate"      : truncate,
-	"truncatewords" : truncateWords,
-	"upcase"        : upper,
+
+	"capitalize"        : capitalize,
+	"date_to_string"    : dateToString,
+	"date_to_xmlschema" : dateToXmlSchema,
+	"downcase"          : lower,
+	"eq"                : eq,
+	"newline_to_br"     : newlineToBreak,
+	"replace"           : replace,
+	"replace_first"     : replaceFirst,
+	"remove"            : remove,
+	"remove_first"      : removeFirst,
+	"split"             : split,
+	"strip_newlines"    : stripNewlines,
+	"truncate"          : truncate,
+	"truncatewords"     : truncateWords,
+	"upcase"            : upper,
 }
 
 // Capitalize words in the input sentence
@@ -29,6 +33,16 @@ func capitalize(s string) string {
 // Checks if two values are equal
 func eq(v1 interface{}, v2 interface{}) bool { 
 	return v1 == v2
+}
+
+// Converts a date to a string
+func dateToString(date time.Time) string { 
+	return date.Format("2006-01-02")
+}
+
+// Converts a date to a string
+func dateToXmlSchema(date time.Time) string { 
+	return date.Format(time.RFC3339)
 }
 
 // Convert an input string to lowercase
