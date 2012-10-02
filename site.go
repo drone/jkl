@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"github.com/russross/blackfriday"
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -208,10 +207,11 @@ func (s *Site) writePages() error {
 
 	for _, page := range pages {
 		url := page.GetUrl()
-		raw := page.GetContent()
 		layout := page.GetLayout()
-		layoutNil := layout == "" || layout == "nil"
 		layout = appendExt(layout, ".html")
+
+		// is the layout provided? or is it nil /empty?
+		//layoutNil := layout == "" || layout == "nil"
 
 		// make sure the posts's parent dir exists
 		d := filepath.Join(s.Dest, filepath.Dir(url))
@@ -222,29 +222,48 @@ func (s *Site) writePages() error {
 
 		// if markdown, need to convert to html
 		// otherwise just convert raw html to a string
-		var content string
-		if isMarkdown(page.GetExt()) {
-			content = string(blackfriday.MarkdownCommon(raw))
-		} else {
-			content = string(raw)
-		}
+		//var content string
+		//if isMarkdown(page.GetExt()) {
+		//	content = string(blackfriday.MarkdownCommon(raw))
+		//} else {
+		//	content = string(raw)
+		//}
 
 		//data passed in to each template
 		data := map[string]interface{} {
 			"site": s.Conf,
 			"page": page,
-			"content" : content,
 		}
+
+		// treat all non-markdown pages as templates
+		content := page.GetContent()
+		if isMarkdown(page.GetExt()) == false {
+			// this code will add the page to the list of templates,
+			// will execute the template, and then set the content
+			// to the rendered template
+			t, err := s.templ.New(url).Parse(content);
+			if err != nil { return err }
+			var buf bytes.Buffer
+			err = t.ExecuteTemplate(&buf, url, data);
+			if err != nil { return err }
+			content = buf.String()
+		}
+
+		// add document body to the map
+		data["content"] = content
+
+
 
 		// write the template to a buffer
 		// NOTE: if template is nil or empty, then we should parse the
 		//       content as if it were a template
 		var buf bytes.Buffer
-		if layoutNil {
-			t, err := s.templ.New(url).Parse(content);
-			if err != nil { return err }
-			err = t.ExecuteTemplate(&buf, url, data);
-			if err != nil { return err }
+		if layout == "" || layout == "nil" {
+			//t, err := s.templ.New(url).Parse(content);
+			//if err != nil { return err }
+			//err = t.ExecuteTemplate(&buf, url, data);
+			//if err != nil { return err }
+			buf.WriteString(content)
 		} else {
 			s.templ.ExecuteTemplate(&buf, layout, data)
 		}

@@ -7,6 +7,8 @@ import (
 	"launchpad.net/goyaml"
 	"path/filepath"
 	"strings"
+
+	"github.com/russross/blackfriday"
 )
 
 // A Page represents the key-value pairs in a page or posts front-end YAML as
@@ -34,8 +36,10 @@ func parsePage(fn string, c []byte) (Page, error) {
 
 	ext := filepath.Ext(fn)
 	ext_output := ext
-	// if the file is markdown, change to html extension
-	if isMarkdown(fn) {
+	markdown := isMarkdown(fn)
+
+	// if markdown, change the output extension to html
+	if markdown {
 		ext_output = ".html"
 	}
 
@@ -43,7 +47,14 @@ func parsePage(fn string, c []byte) (Page, error) {
 	page["output_ext"] = ext_output
 	page["id"] = removeExt(fn)
 	page["url"] = replaceExt(fn, ext_output)
-	page["content"] = parseContent(c)
+
+	// if markdown, convert to html
+	raw := parseContent(c)
+	if markdown {
+		page["content"] = string(blackfriday.MarkdownCommon(raw))
+	} else {
+		page["content"] = string(raw)
+	}
 
 	if page["layout"] == "" {
 		page["layout"] = "default"
@@ -154,9 +165,9 @@ func (p Page) GetExt() string {
 }
 
 // Gets the un-rendered content of the Page.
-func (p Page) GetContent() (c []byte) {
+func (p Page) GetContent() (c string) {
 	if v, ok := p["content"]; ok {
-		c = v.([]byte)
+		c = v.(string)
 	}
 	return
 }
