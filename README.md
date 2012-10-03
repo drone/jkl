@@ -12,12 +12,16 @@ Notable differences between jkl and Jekyll:
 
 * Uses [Go templates](http://www.golang.org/pkg/text/template)
 * Only supports YAML front matter in markup files
-* Only processes pages and posts with .html, .markdown or .md extension
 * No plugin support
 
 Additional features:
 
 * Deploy to S3
+
+Sites built with jkl:
+
+* Drone.io Blog: http://blog.drone.io
+* Drone.io Documentation: http://docs.drone.io
 
 --------------------------------------------------------------------------------
 
