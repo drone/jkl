@@ -37,7 +37,10 @@ func hasMatter(fn string) bool {
 // Returns True if the file is a temp file (starts with . or ends with ~).
 func isHiddenOrTemp(fn string) bool {
 	base := filepath.Base(fn)
-	return strings.HasPrefix(base, ".") || strings.HasSuffix(base, "~")
+	return strings.HasPrefix(base, ".") || 
+				strings.HasPrefix(fn, ".") ||
+				strings.HasSuffix(base, "~") ||
+				fn == "README.md"
 }
 
 // Returns True if the file is a template. This is determine by the files
