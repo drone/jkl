@@ -1,6 +1,8 @@
 **jkl** is a static site generator written in [Go](http://www.golang.org),
 based on [Jekyll](https://github.com/mojombo/jekyll)
 
+[![Build Status](https://drone.io/drone/jkl/status.png)](https://drone.io/drone/jkl/latest)
+
 Notable similarities between jkl and Jekyll:
 
 * Directory structure
