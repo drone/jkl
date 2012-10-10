@@ -104,6 +104,9 @@ func isPost(fn string) bool {
 
 // Returns True if the specified file is Static Content, meaning it should
 // be included in the site, but not compiled and processed by Jekyll.
+//
+// NOTE: this assumes that we've already established the file is not markdown
+//       and does not have yaml front matter.
 func isStatic(fn string) bool {
 	return !strings.HasPrefix(fn, "_")
 }
