@@ -209,7 +209,7 @@ func (s *Site) writePages() error {
 	for _, page := range pages {
 		url := page.GetUrl()
 		layout := page.GetLayout()
-		layout = appendExt(layout, ".html")
+		
 
 		// is the layout provided? or is it nil /empty?
 		//layoutNil := layout == "" || layout == "nil"
@@ -264,8 +264,10 @@ func (s *Site) writePages() error {
 			//if err != nil { return err }
 			//err = t.ExecuteTemplate(&buf, url, data);
 			//if err != nil { return err }
+
 			buf.WriteString(content)
 		} else {
+			layout = appendExt(layout, ".html")
 			s.templ.ExecuteTemplate(&buf, layout, data)
 		}
 
