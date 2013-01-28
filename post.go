@@ -39,8 +39,8 @@ func ParsePost(fn string) (Page, error) {
 	day := strconv.Itoa(d.Day())
 	year := strconv.Itoa(d.Year())
 	name := replaceExt(f, ".html")
-	post["id"] = filepath.Join(year, mon, day, f)
-	post["url"]= filepath.Join(year, mon, day, name)
+	post["id"] = filepath.Join(year, mon, day, f) // TODO try to remember why I need this field
+	post["url"]= filepath.Join(year, mon, day, name[11:])
 
 	return post, nil
 }
@@ -62,7 +62,7 @@ func parsePostName(fn string) (name string, date time.Time, err error) {
 	name = fn[11:]
 	name = removeExt(name)
 
-	name = strings.Replace(name, "-", "", -1)
+	name = strings.Replace(name, "-", " ", -1)
 	name = strings.ToTitle(name)
 	return
 }
