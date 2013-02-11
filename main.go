@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dersebi/golang_exp/exp/inotify"
+	"github.com/howeyc/fsnotify"
 
 	"flag"
 	"fmt"
@@ -109,16 +109,16 @@ func main() {
 			}
 		} else {
 			// else use the command line args
-			conf = &DeployConfig{ *s3key, *s3secret, *s3bucket }
+			conf = &DeployConfig{*s3key, *s3secret, *s3bucket}
 		}
-		
+
 		if err := site.Deploy(conf.Key, conf.Secret, conf.Bucket); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 	}
 
-	// If the auto option is enabled, use inotify to watch
+	// If the auto option is enabled, use fsnotify to watch
 	// and re-generate the site if files change.
 	if *auto {
 		fmt.Printf("Listening for changes to %s\n", site.Src)
@@ -162,18 +162,15 @@ func main() {
 func watch(site *Site) {
 
 	// Setup the inotify watcher
-	watcher, err := inotify.NewWatcher()
+	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	// Only the events we care about
-	const flags = inotify.IN_MODIFY | inotify.IN_DELETE | inotify.IN_CREATE | inotify.IN_MOVE
-
 	// Get recursive list of directories to watch
 	for _, path := range dirs(site.Src) {
-		if err := watcher.AddWatch(path, flags); err != nil {
+		if err := watcher.Watch(path); err != nil {
 			fmt.Println(err)
 			return
 		}
@@ -182,7 +179,7 @@ func watch(site *Site) {
 	for {
 		select {
 		case ev := <-watcher.Event:
-			// Ignore changes to the _site directoy, hidden, or temp files		
+			// Ignore changes to the _site directoy, hidden, or temp files
 			if !strings.HasPrefix(ev.Name, site.Dest) && !isHiddenOrTemp(ev.Name) {
 				fmt.Println("Event:", ev.Name)
 				recompile(site)
