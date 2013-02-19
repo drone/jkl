@@ -37,7 +37,7 @@ go get github.com/russross/blackfriday
 go get launchpad.net/goyaml
 go get launchpad.net/goamz/aws
 go get launchpad.net/goamz/s3
-go get github.com/dersebi/golang_exp/exp/inotify
+go get github.com/howeyc/fsnotify
 ```
 Once you have compiled `jkl` you can install with the following command:
 
