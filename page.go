@@ -56,7 +56,7 @@ func parsePage(fn string, c []byte) (Page, error) {
 		page["content"] = string(raw)
 	}
 
-	if page["layout"] == "" {
+	if page["layout"] == nil {
 		page["layout"] = "default"
 	}
 
