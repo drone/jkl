@@ -2,8 +2,8 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -35,9 +35,9 @@ func ParsePost(fn string) (Page, error) {
 	}
 
 	// figoure out the Posts permalink
-	mon := strconv.Itoa(int(d.Month()))
-	day := strconv.Itoa(d.Day())
-	year := strconv.Itoa(d.Year())
+	mon := fmt.Sprintf("%02d", d.Month())
+	day := fmt.Sprintf("%02d", d.Day())
+	year := fmt.Sprintf("%02d", d.Year())
 	name := replaceExt(f, ".html")
 	post["id"] = filepath.Join(year, mon, day, f) // TODO try to remember why I need this field
 	post["url"]= filepath.Join(year, mon, day, name[11:])
