@@ -56,7 +56,7 @@ func parsePage(fn string, c []byte) (Page, error) {
 		page["content"] = string(raw)
 	}
 
-	if page["layout"] == "" {
+	if page["layout"] == nil {
 		page["layout"] = "default"
 	}
 
@@ -129,9 +129,11 @@ func (p Page) GetString(key string) (str string) {
 // Gets a parameter value as a string array.
 func (p Page) GetStrings(key string) (strs []string) {
 	if v, ok := p[key]; ok {
-		strs = v.([]string)
+		for _, s := range v.([]interface{}) {
+			strs = append(strs, s.(string))
+		}
 	}
-	return []string{}
+	return
 }
 
 // Gets a parameter value as a byte array.
