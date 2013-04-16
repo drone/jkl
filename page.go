@@ -2,13 +2,13 @@ package main
 
 import (
 	"bytes"
+	"github.com/russross/blackfriday"
 	"io"
 	"io/ioutil"
 	"launchpad.net/goyaml"
 	"path/filepath"
+	"regexp"
 	"strings"
-
-	"github.com/russross/blackfriday"
 )
 
 // A Page represents the key-value pairs in a page or posts front-end YAML as
@@ -28,7 +28,7 @@ func ParsePage(fn string) (Page, error) {
 // Helper function that creates a new Page from a byte array, parsing the
 // front-end YAML and the markup, and pre-calculating all page-level variables.
 func parsePage(fn string, c []byte) (Page, error) {
-	
+
 	page, err := parseMatter(c) //map[string] interface{} { }
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func parsePage(fn string, c []byte) (Page, error) {
 	// according to spec, Jekyll allows user to enter either category or
 	// categories. Convert single category to string array to be consistent ...
 	if category := page.GetString("category"); category != "" {
-		page["categories"] = []string{ category }
+		page["categories"] = []string{category}
 		delete(page, "category")
 	}
 
@@ -72,7 +72,7 @@ func parsePage(fn string, c []byte) (Page, error) {
 
 // Helper function to parse the front-end yaml matter.
 func parseMatter(content []byte) (Page, error) {
-	page := map[string] interface{} { }
+	page := map[string]interface{}{}
 	err := goyaml.Unmarshal(content, &page)
 	return page, err
 }
@@ -88,7 +88,8 @@ func parseContent(content []byte) []byte {
 
 	//read each line of the file and read the markdown section
 	//which is the second document stream in the yaml file
-	parse : for {
+parse:
+	for {
 		line, err := b.ReadString('\n')
 		switch {
 		case err == io.EOF && streams >= 2:
@@ -96,11 +97,11 @@ func parseContent(content []byte) []byte {
 			break parse
 		case err == io.EOF:
 			break parse
-		case err != nil :
+		case err != nil:
 			return nil
 		case streams >= 2:
 			m.WriteString(line)
-		case strings.HasPrefix(line, "---") :
+		case strings.HasPrefix(line, "---"):
 			streams++
 		}
 	}
@@ -184,3 +185,13 @@ func (p Page) GetCategories() []string {
 	return p.GetStrings("categories")
 }
 
+func (p Page) MainImg() (src string) {
+	r, _ := regexp.Compile(`img src="(.*?)"`)
+	matches := r.FindStringSubmatch(p["content"].(string))
+	if matches == nil {
+		src = "defalutImg.jpg"
+	} else {
+		src = matches[1]
+	}
+	return
+}
