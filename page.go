@@ -3,9 +3,9 @@ package main
 import (
 	"bytes"
 	"github.com/russross/blackfriday"
+	"github.com/wendal/goyaml2"
 	"io"
 	"io/ioutil"
-	"launchpad.net/goyaml"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -73,7 +73,15 @@ func parsePage(fn string, c []byte) (Page, error) {
 // Helper function to parse the front-end yaml matter.
 func parseMatter(content []byte) (Page, error) {
 	page := map[string]interface{}{}
-	err := goyaml.Unmarshal(content, &page)
+
+	//first we extract the front YAML matter
+	yamlMatter := bytes.Split(content, []byte("---\n"))[1]
+	yamlParsed, err := goyaml2.Read(bytes.NewBuffer(yamlMatter))
+	if err != nil {
+		return nil, err
+	}
+
+	page = yamlParsed.(map[string]interface{})
 	return page, err
 }
 
