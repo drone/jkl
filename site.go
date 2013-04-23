@@ -315,7 +315,10 @@ func (s *Site) writeStatic() error {
 func (s *Site) calculateCategories() {
 
 	categories := make(map[string][]Page)
-	for _, post := range s.posts {
+
+	//Assuming that posts is sorted from most recent to least recent.
+	latest_posts := s.posts[:600]
+	for _, post := range latest_posts {
 		for _, category := range post.GetCategories() {
 			if posts, ok := categories[category]; ok == true {
 				categories[category] = append(posts, post)
