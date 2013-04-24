@@ -317,7 +317,12 @@ func (s *Site) calculateCategories() {
 	categories := make(map[string][]Page)
 
 	//Assuming that posts is sorted from most recent to least recent.
-	latest_posts := s.posts[:600]
+	max_post := 600
+	if len(s.posts) < max_post {
+		max_post = len(s.posts)
+	}
+
+	latest_posts := s.posts[:max_post]
 	for _, post := range latest_posts {
 		for _, category := range post.GetCategories() {
 			if posts, ok := categories[category]; ok == true {
