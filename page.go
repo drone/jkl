@@ -201,5 +201,8 @@ func (p Page) MainImg() (src string) {
 	} else {
 		src = matches[1]
 	}
+        if  !Containts(src, "imgur"){
+           src = "http://www.ljz.mx/" + src
+        }
 	return
 }
