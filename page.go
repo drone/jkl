@@ -201,8 +201,40 @@ func (p Page) MainImg() (src string) {
 	} else {
 		src = matches[1]
 	}
-        if  !Containts(src, "imgur"){
-           src = "http://www.ljz.mx/" + src
-        }
+	if !strings.Contains(src, "imgur") {
+		src = "http://www.ljz.mx/" + src
+	}
+	return
+}
+
+func (p Page) MainImgThumb() (thumb_url string) {
+	big_image := p.MainImg()
+	if strings.Contains(big_image, "imgur") {
+		r := regexp.MustCompile(`(.*imgur.*?)m\.([a-zA-Z]{3})$`)
+		thumb_url = r.ReplaceAllString(big_image, "$1 s.$2")
+		//this shouldn't be necersary but the Replace all string was weird when using "$1s.$2"
+		thumb_url = strings.Replace(thumb_url, " ", "", -1)
+	} else {
+		thumb_url = big_image
+	}
+	return
+}
+
+// Gets the list of categories to which this post belongs.
+func (p Page) GetIntrotext() (intro string) {
+	if _, found := p["introtext"]; found == true {
+		intro = p.GetString("introtext")
+	} else {
+		intro = p["content"].(string)
+		r, _ := regexp.Compile(`<img (.*?) />`) //eliminate the images,
+		intro = r.ReplaceAllString(intro, "")
+		max_chars := 450
+		if len(intro) < max_chars {
+			max_chars = len(intro)
+		}
+		intro = strings.TrimSpace(intro[:max_chars])
+		intro = intro[0:strings.LastIndex(intro, " ")]
+	}
+
 	return
 }
