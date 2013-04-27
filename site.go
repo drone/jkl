@@ -206,7 +206,7 @@ func (s *Site) read() error {
 	s.Conf.Set("Something", "hola mundoooo")
 	s.calculateTags()
 	s.calculateCategories()
-	s.oSetMinuteByMinute()
+	s.SetMinuteByMinute()
 
 	return nil
 }
