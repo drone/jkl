@@ -20,12 +20,14 @@ var (
 )
 
 type Site struct {
-	Src  string // Directory where Jekyll will look to transform files
-	Dest string // Directory where Jekyll will write files to
-	Conf Config // Configuration date from the _config.yml file
+	Src       string // Directory where Jekyll will look to transform files
+	Dest      string // Directory where Jekyll will write files to
+	Conf      Config // Configuration date from the _config.yml file
+	Something string
 
-	posts []Page             // Posts thet need to be generated
-	pages []Page             // Pages that need to be generated
+	posts []Page // Posts thet need to be generated
+	pages []Page // Pages that need to be generated
+
 	files []string           // Static files to get copied to the destination
 	templ *template.Template // Compiled templates
 }
@@ -201,8 +203,10 @@ func (s *Site) read() error {
 	// Add the posts, timestamp, etc to the Site Params
 	s.Conf.Set("posts", s.posts)
 	s.Conf.Set("time", time.Now())
+	s.Conf.Set("Something", "hola mundoooo")
 	s.calculateTags()
 	s.calculateCategories()
+	s.oSetMinuteByMinute()
 
 	return nil
 }
@@ -352,4 +356,15 @@ func (s *Site) calculateTags() {
 	}
 
 	s.Conf.Set("tags", tags)
+}
+
+func (s *Site) SetMinuteByMinute() {
+	//Assuming that posts is sorted from most recent to least recent.
+	max_post := 30
+	if len(s.posts) < max_post {
+		max_post = len(s.posts)
+	}
+
+	latest_posts := s.posts[:max_post]
+	s.Conf.Set("MinuteByMinute", latest_posts)
 }
