@@ -207,7 +207,8 @@ func (s *Site) read() error {
 	s.calculateTags()
 	s.calculateCategories()
 	s.SetMinuteByMinute()
-
+	s.calculateAuthors()
+	
 	return nil
 }
 
@@ -357,6 +358,17 @@ func (s *Site) calculateTags() {
 
 	s.Conf.Set("tags", tags)
 }
+
+func (s *Site) calculateAuthors() {
+
+	authors := make(map[string]string)
+	for _, post := range s.posts {
+	    author := post.GetAuthor()
+	    authors[author] = post.GetAuthorLink()
+	}
+	s.Conf.Set("authors", authors)
+}
+
 
 func (s *Site) SetMinuteByMinute() {
 	//Assuming that posts is sorted from most recent to least recent.

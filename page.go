@@ -188,6 +188,15 @@ func (p Page) GetTags() []string {
 	return p.GetStrings("tags")
 }
 
+// Gets the of author to which this Post belongs.
+func (p Page) GetAuthor() string {
+	return p.GetString("author")
+}
+
+// Gets the of author to which this Post belongs.
+func (p Page) GetAuthorLink() string {
+	return p.GetString("authorlink")
+}
 // Gets the list of categories to which this post belongs.
 func (p Page) GetCategories() []string {
 	return p.GetStrings("categories")
