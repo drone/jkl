@@ -197,6 +197,7 @@ func (p Page) GetAuthor() string {
 func (p Page) GetAuthorLink() string {
 	return p.GetString("authorlink")
 }
+
 // Gets the list of categories to which this post belongs.
 func (p Page) GetCategories() []string {
 	return p.GetStrings("categories")
@@ -216,17 +217,23 @@ func (p Page) MainImg() (src string) {
 	return
 }
 
-func (p Page) MainImgThumb() (thumb_url string) {
+//Image Thumbnails
+//http://api.imgur.com/models/image
+func (p Page) MainImgSize(size string) (thumb_url string) {
 	big_image := p.MainImg()
 	if strings.Contains(big_image, "imgur") {
 		r := regexp.MustCompile(`(.*imgur.*?)m\.([a-zA-Z]{3})$`)
-		thumb_url = r.ReplaceAllString(big_image, "$1 s.$2")
+		thumb_url = r.ReplaceAllString(big_image, "$1 "+size+".$2")
 		//this shouldn't be necersary but the Replace all string was weird when using "$1s.$2"
 		thumb_url = strings.Replace(thumb_url, " ", "", -1)
 	} else {
 		thumb_url = big_image
 	}
 	return
+}
+
+func (p Page) MainImgThumb() (thumb_url string) {
+	return p.MainImgSize("s")
 }
 
 // Gets the list of categories to which this post belongs.
