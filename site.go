@@ -208,7 +208,7 @@ func (s *Site) read() error {
 	s.calculateCategories()
 	s.SetMinuteByMinute()
 	s.calculateAuthors()
-	
+	s.getPostByAuthor()	
 	return nil
 }
 
@@ -372,11 +372,33 @@ func (s *Site) calculateAuthors() {
 
 func (s *Site) SetMinuteByMinute() {
 	//Assuming that posts is sorted from most recent to least recent.
-	max_post := 30
-	if len(s.posts) < max_post {
-		max_post = len(s.posts)
+	s.Conf.Set("MinuteByMinute", cutArr(s.posts,30))
+}
+
+func (s *Site) getPostByAuthor() {
+	autor_posts := make(map[string][]Page)
+
+	for _, post := range s.posts {
+		if posts, ok := autor_posts[post.GetAuthor()]; ok == true{
+			autor_posts[post.GetAuthor()] = append(posts, post)
+		} else {
+			autor_posts[post.GetAuthor()] = []Page{post}
+		}
+	}
+	
+	small_autor := make(map[string][]Page)
+	
+	for autor_name, autor_news := range autor_posts {
+	    small_autor[autor_name] = cutArr(autor_news,30)
 	}
 
-	latest_posts := s.posts[:max_post]
-	s.Conf.Set("MinuteByMinute", latest_posts)
+	s.Conf.Set("postByAuthor", small_autor)
+}
+
+func cutArr(news []Page, max_post int) ([]Page) {
+     if len(news) < max_post {
+     	max_post = len(news)
+     }
+     return news[:max_post]
+     
 }
