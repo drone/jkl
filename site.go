@@ -369,10 +369,45 @@ func (s *Site) calculateAuthors() {
 	s.Conf.Set("authors", authors)
 }
 
+func getSubStr(word string, arr []string) (bool){
+     flag := false
+     for i := 0; i < len(arr); i++{
+     	 if word == arr[i]{
+	    flag = true
+	 }
+     }
+     return flag
+}
+
+func getSubArr(word []string, arr []string) (bool){
+     flag := false
+     for i := 0; i < len(arr); i++{
+     	 for j:= 0; j < len(word); j++{
+     	     if word[j] == arr[i]{
+	     	flag = true
+	     }
+	 }
+     }
+     return flag
+}
 
 func (s *Site) SetMinuteByMinute() {
-	//Assuming that posts is sorted from most recent to least recent.
-	s.Conf.Set("MinuteByMinute", cutArr(s.posts,30))
+	max_post := 600
+	minbymin := []string{"Autor", "Publicidad"}
+	min_posts := []Page{}
+	if len(s.posts) < max_post {
+		max_post = len(s.posts)
+	}
+	latest_posts := s.posts[:max_post]
+	for _, post := range latest_posts {
+
+	    	    if !getSubArr(post.GetCategories(), minbymin){
+		       min_posts = append(min_posts, post)
+		    }
+
+	}
+
+	s.Conf.Set("MinuteByMinute", min_posts)
 }
 
 func (s *Site) getPostByAuthor() {
