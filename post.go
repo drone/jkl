@@ -33,7 +33,11 @@ func ParsePost(fn string) (Page, error) {
 	if post.GetTitle() == "" {
 		post["title"] = t
 	}
-
+	
+	//Setting time of creation
+//	archivo := *os.FileInfo()
+	post["time"] = fn
+	
 	// figoure out the Posts permalink
 	mon := fmt.Sprintf("%02d", d.Month())
 	day := fmt.Sprintf("%02d", d.Day())

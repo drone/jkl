@@ -315,7 +315,7 @@ func (s *Site) writeStatic() error {
 	return nil
 }
 
-// Helper function to aggregate a list of all categories and their
+// Helper function to aggregate a list of all categories anxod their
 // related posts.
 func (s *Site) calculateCategories() {
 

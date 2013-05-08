@@ -167,8 +167,13 @@ func (p Page) GetTitle() string {
 // Gets the URL / relative path of the Page.
 // e.g. /2008/12/14/my-post.html
 func (p Page) GetUrl() string {
-	return p.GetString("url")
+	return "/" + p.GetString("url")
 }
+
+// Gets the URL / relative path of the Page.
+func (p Page) GetUrlRel() string{
+	return p.GetString("url")
+} 
 
 // Gets the Extension of the File (.html, .md, etc)
 func (p Page) GetExt() string {
@@ -182,6 +187,7 @@ func (p Page) GetContent() (c string) {
 	}
 	return
 }
+
 
 // Gets the list of tags to which this Post belongs.
 func (p Page) GetTags() []string {
