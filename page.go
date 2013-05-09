@@ -173,7 +173,7 @@ func (p Page) GetUrl() string {
 // Gets the URL / relative path of the Page.
 func (p Page) GetUrlRel() string{
 	return p.GetString("url")
-} 
+}
 
 // Gets the Extension of the File (.html, .md, etc)
 func (p Page) GetExt() string {
@@ -213,12 +213,9 @@ func (p Page) MainImg() (src string) {
 	r, _ := regexp.Compile(`img src="(.*?)"`)
 	matches := r.FindStringSubmatch(p["content"].(string))
 	if matches == nil {
-		src = "defalutImg.jpg"
+		src = ""
 	} else {
 		src = matches[1]
-	}
-	if !strings.Contains(src, "imgur") {
-		src = "http://www.ljz.mx/" + src
 	}
 	return
 }
