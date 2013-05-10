@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/russross/blackfriday"
 	"github.com/wendal/goyaml2"
 	"io"
@@ -171,7 +172,7 @@ func (p Page) GetUrl() string {
 }
 
 // Gets the URL / relative path of the Page.
-func (p Page) GetUrlRel() string{
+func (p Page) GetUrlRel() string {
 	return p.GetString("url")
 }
 
@@ -187,7 +188,6 @@ func (p Page) GetContent() (c string) {
 	}
 	return
 }
-
 
 // Gets the list of tags to which this Post belongs.
 func (p Page) GetTags() []string {
@@ -209,26 +209,28 @@ func (p Page) GetCategories() []string {
 	return p.GetStrings("categories")
 }
 
-func (p Page) MainVideo() (src string) {
-	r, _ := regexp.Compile(`<iframe .*?iframe>`)
+func (p Page) ExtractFragment(regex, format string) (res string) {
+	r := regexp.MustCompile(regex)
+	src := ""
+	res = ""
 	matches := r.FindStringSubmatch(p["content"].(string))
-	if matches == nil {
-		src = ""
-	} else {
-		src = matches[0]
+	if matches != nil {
+		src = matches[1]
+		res = fmt.Sprintf(format, src)
 	}
 	return
 }
 
+func (p Page) MainVideoThumb() (src string) {
+	return p.ExtractFragment(`embed/(.*?)"`, "http://img.youtube.com/vi/%s/default.jpg")
+}
+
+func (p Page) MainVideo() (src string) {
+	return p.ExtractFragment(`<iframe (.*?)iframe>`, "<iframe %siframe>")
+}
+
 func (p Page) MainImg() (src string) {
-	r, _ := regexp.Compile(`img src="(.*?)"`)
-	matches := r.FindStringSubmatch(p["content"].(string))
-	if matches == nil {
-		src = ""
-	} else {
-		src = matches[1]
-	}
-	return
+	return p.ExtractFragment(`img src="(.*?)"`, "%s")
 }
 
 //Image Thumbnails
