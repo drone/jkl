@@ -168,8 +168,10 @@ func (s *Site) read() error {
 			if err != nil {
 				return err
 			}
-			// TODO: this is a hack to get the posts in rev chronological order
-			s.posts = append([]Page{post}, s.posts...) //s.posts, post)
+			if post["published"] == true {
+				// TODO: this is a hack to get the posts in rev chronological order
+				s.posts = append([]Page{post}, s.posts...) //s.posts, post)
+			}
 
 		// Parse Pages
 		case isPage(rel):
