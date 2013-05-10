@@ -209,6 +209,17 @@ func (p Page) GetCategories() []string {
 	return p.GetStrings("categories")
 }
 
+func (p Page) MainVideo() (src string) {
+	r, _ := regexp.Compile(`<iframe .*?iframe>`)
+	matches := r.FindStringSubmatch(p["content"].(string))
+	if matches == nil {
+		src = ""
+	} else {
+		src = matches[0]
+	}
+	return
+}
+
 func (p Page) MainImg() (src string) {
 	r, _ := regexp.Compile(`img src="(.*?)"`)
 	matches := r.FindStringSubmatch(p["content"].(string))
