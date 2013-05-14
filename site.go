@@ -1,7 +1,8 @@
 package main
 
 import (
-	"bytes"
+	//	"bytes"
+	"fmt"
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -199,6 +200,7 @@ func (s *Site) read() error {
 	//s.templ = template.Must(template.ParseFiles(layouts...))
 	s.templ, err = template.New("layouts").Funcs(funcMap).ParseFiles(layouts...)
 	if err != nil {
+		fmt.Printf("a poco por aca?")
 		return err
 	}
 
@@ -210,7 +212,7 @@ func (s *Site) read() error {
 	s.calculateCategories()
 	s.SetMinuteByMinute()
 	s.calculateAuthors()
-	s.getPostByAuthor()	
+	s.getPostByAuthor()
 	return nil
 }
 
@@ -227,7 +229,7 @@ func (s *Site) writePages() error {
 
 	for _, page := range pages {
 		url := page.GetUrl()
-		layout := page.GetLayout()
+		//		layout := page.GetLayout()
 
 		// is the layout provided? or is it nil /empty?
 		//layoutNil := layout == "" || layout == "nil"
@@ -254,41 +256,9 @@ func (s *Site) writePages() error {
 			"page": page,
 		}
 
-		// treat all non-markdown pages as templates
-		content := page.GetContent()
-		if isMarkdown(page.GetExt()) == false {
-			// this code will add the page to the list of templates,
-			// will execute the template, and then set the content
-			// to the rendered template
-			t, err := s.templ.New(url).Parse(content)
-			if err != nil {
-				return err
-			}
-			var buf bytes.Buffer
-			err = t.ExecuteTemplate(&buf, url, data)
-			if err != nil {
-				return err
-			}
-			content = buf.String()
-		}
-
-		// add document body to the map
-		data["content"] = content
-
-		// write the template to a buffer
-		// NOTE: if template is nil or empty, then we should parse the
-		//       content as if it were a template
-		var buf bytes.Buffer
-		if layout == "" || layout == "nil" {
-			//t, err := s.templ.New(url).Parse(content);
-			//if err != nil { return err }
-			//err = t.ExecuteTemplate(&buf, url, data);
-			//if err != nil { return err }
-
-			buf.WriteString(content)
-		} else {
-			layout = appendExt(layout, ".html")
-			s.templ.ExecuteTemplate(&buf, layout, data)
+		buf, err := page.RenderTemplate(s, data)
+		if err != nil {
+			return err
 		}
 
 		logf(MsgGenerateFile, url)
@@ -365,32 +335,32 @@ func (s *Site) calculateAuthors() {
 
 	authors := make(map[string]string)
 	for _, post := range s.posts {
-	    author := post.GetAuthor()
-	    authors[author] = post.GetAuthorLink()
+		author := post.GetAuthor()
+		authors[author] = post.GetAuthorLink()
 	}
 	s.Conf.Set("authors", authors)
 }
 
-func getSubStr(word string, arr []string) (bool){
-     flag := false
-     for i := 0; i < len(arr); i++{
-     	 if word == arr[i]{
-	    flag = true
-	 }
-     }
-     return flag
+func getSubStr(word string, arr []string) bool {
+	flag := false
+	for i := 0; i < len(arr); i++ {
+		if word == arr[i] {
+			flag = true
+		}
+	}
+	return flag
 }
 
-func getSubArr(word []string, arr []string) (bool){
-     flag := false
-     for i := 0; i < len(arr); i++{
-     	 for j:= 0; j < len(word); j++{
-     	     if word[j] == arr[i]{
-	     	flag = true
-	     }
-	 }
-     }
-     return flag
+func getSubArr(word []string, arr []string) bool {
+	flag := false
+	for i := 0; i < len(arr); i++ {
+		for j := 0; j < len(word); j++ {
+			if word[j] == arr[i] {
+				flag = true
+			}
+		}
+	}
+	return flag
 }
 
 func (s *Site) SetMinuteByMinute() {
@@ -403,9 +373,9 @@ func (s *Site) SetMinuteByMinute() {
 	latest_posts := s.posts[:max_post]
 	for _, post := range latest_posts {
 
-	    	    if !getSubArr(post.GetCategories(), minbymin){
-		       min_posts = append(min_posts, post)
-		    }
+		if !getSubArr(post.GetCategories(), minbymin) {
+			min_posts = append(min_posts, post)
+		}
 
 	}
 
@@ -416,26 +386,26 @@ func (s *Site) getPostByAuthor() {
 	autor_posts := make(map[string][]Page)
 
 	for _, post := range s.posts {
-		if posts, ok := autor_posts[post.GetAuthor()]; ok == true{
+		if posts, ok := autor_posts[post.GetAuthor()]; ok == true {
 			autor_posts[post.GetAuthor()] = append(posts, post)
 		} else {
 			autor_posts[post.GetAuthor()] = []Page{post}
 		}
 	}
-	
+
 	small_autor := make(map[string][]Page)
-	
+
 	for autor_name, autor_news := range autor_posts {
-	    small_autor[autor_name] = cutArr(autor_news,30)
+		small_autor[autor_name] = cutArr(autor_news, 30)
 	}
 
 	s.Conf.Set("postByAuthor", small_autor)
 }
 
-func cutArr(news []Page, max_post int) ([]Page) {
-     if len(news) < max_post {
-     	max_post = len(news)
-     }
-     return news[:max_post]
-     
+func cutArr(news []Page, max_post int) []Page {
+	if len(news) < max_post {
+		max_post = len(news)
+	}
+	return news[:max_post]
+
 }

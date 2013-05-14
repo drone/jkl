@@ -75,15 +75,17 @@ func parsePage(fn string, c []byte) (Page, error) {
 func parseMatter(content []byte) (Page, error) {
 	page := map[string]interface{}{}
 
-	//first we extract the front YAML matter
-	yamlMatter := bytes.Split(content, []byte("---\n"))[1]
-	yamlParsed, err := goyaml2.Read(bytes.NewBuffer(yamlMatter))
-	if err != nil {
-		return nil, err
-	}
+	if bytes.Contains(content, []byte("---\n")) {
+		//first we extract the front YAML matter
+		yamlMatter := bytes.Split(content, []byte("---\n"))[1]
+		yamlParsed, err := goyaml2.Read(bytes.NewBuffer(yamlMatter))
+		if err != nil {
+			return nil, err
+		}
 
-	page = yamlParsed.(map[string]interface{})
-	return page, err
+		page = yamlParsed.(map[string]interface{})
+	}
+	return page, nil
 }
 
 // Helper function that separates the front-end yaml from the markup, and
@@ -218,6 +220,54 @@ func (p Page) ExtractFragment(regex, format string) (res string) {
 		src = matches[1]
 		res = fmt.Sprintf(format, src)
 	}
+	return
+}
+
+//technical debt:
+// creo que al hacer que compile todos los documentos como si fueran templates
+//me estoy arriesgando a que se acabe la RAM
+
+func (page Page) RenderTemplate(s *Site, data map[string]interface{}) (buf bytes.Buffer, err error) {
+	url := page.GetUrl()
+
+	content := page.GetContent()
+	t := s.templ.Lookup(url)
+	if t == nil {
+		fmt.Printf("el lookup de url: %s salio nil\n", url)
+		t, err = s.templ.New(url).Parse(content)
+		if err != nil {
+			return buf, err
+		}
+	}
+	//s.templ.New(url).Parse(content)
+
+	err = t.ExecuteTemplate(&buf, url, data)
+	if err != nil {
+		return buf, err
+	}
+	content = buf.String()
+	data["content"] = content
+
+	if page.hasLayout() {
+		pagLayout, err := page.GetLayoutPage(s)
+		if err != nil {
+			return buf, err
+		}
+		buf, err = pagLayout.RenderTemplate(s, data)
+		if err != nil {
+			return buf, err
+		}
+	}
+	return buf, nil
+}
+
+func (p Page) hasLayout() bool {
+	return !(p.GetLayout() == "nil" || p.GetLayout() == "")
+}
+
+func (p Page) GetLayoutPage(s *Site) (pagLayout Page, err error) {
+	fn := s.Src + "/_layouts/" + p.GetLayout() + ".html"
+	pagLayout, err = ParsePage(fn)
 	return
 }
 
