@@ -58,7 +58,7 @@ func parsePage(fn string, c []byte) (Page, error) {
 	}
 
 	if page["layout"] == nil {
-		page["layout"] = "default"
+		page["layout"] = "nil"
 	}
 
 	// according to spec, Jekyll allows user to enter either category or
@@ -233,7 +233,6 @@ func (page Page) RenderTemplate(s *Site, data map[string]interface{}) (buf bytes
 	content := page.GetContent()
 	t := s.templ.Lookup(url)
 	if t == nil {
-		fmt.Printf("el lookup de url: %s salio nil\n", url)
 		t, err = s.templ.New(url).Parse(content)
 		if err != nil {
 			return buf, err

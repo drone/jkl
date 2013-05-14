@@ -1,8 +1,6 @@
 package main
 
 import (
-	//	"bytes"
-	"fmt"
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -200,7 +198,6 @@ func (s *Site) read() error {
 	//s.templ = template.Must(template.ParseFiles(layouts...))
 	s.templ, err = template.New("layouts").Funcs(funcMap).ParseFiles(layouts...)
 	if err != nil {
-		fmt.Printf("a poco por aca?")
 		return err
 	}
 
