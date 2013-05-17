@@ -204,7 +204,7 @@ func (s *Site) read() error {
 	// Add the posts, timestamp, etc to the Site Params
 	s.Conf.Set("posts", s.posts)
 	s.Conf.Set("time", time.Now())
-	s.Conf.Set("Something", "hola mundoooo")
+
 	s.calculateTags()
 	s.calculateCategories()
 	s.SetMinuteByMinute()
@@ -226,10 +226,6 @@ func (s *Site) writePages() error {
 
 	for _, page := range pages {
 		url := page.GetUrl()
-		//		layout := page.GetLayout()
-
-		// is the layout provided? or is it nil /empty?
-		//layoutNil := layout == "" || layout == "nil"
 
 		// make sure the posts's parent dir exists
 		d := filepath.Join(s.Dest, filepath.Dir(url))
@@ -237,15 +233,6 @@ func (s *Site) writePages() error {
 		if err := os.MkdirAll(d, 0755); err != nil {
 			return err
 		}
-
-		// if markdown, need to convert to html
-		// otherwise just convert raw html to a string
-		//var content string
-		//if isMarkdown(page.GetExt()) {
-		//	content = string(blackfriday.MarkdownCommon(raw))
-		//} else {
-		//	content = string(raw)
-		//}
 
 		//data passed in to each template
 		data := map[string]interface{}{

@@ -21,8 +21,9 @@ func ParsePost(fn string) (Page, error) {
 	}
 
 	// parse the Date and Title from the post's file name
-	_,f := filepath.Split(fn)
-	t, d, err := parsePostName(f)
+	temp := strings.Replace(fn, "_posts/", "", -1)
+	t, d, err := parsePostName(temp)
+	_, f := filepath.Split(fn)
 	if err != nil {
 		return nil, err
 	}
@@ -33,18 +34,18 @@ func ParsePost(fn string) (Page, error) {
 	if post.GetTitle() == "" {
 		post["title"] = t
 	}
-	
+
 	//Setting time of creation
-//	archivo := *os.FileInfo()
+	//	archivo := *os.FileInfo()
 	post["time"] = fn
-	
+
 	// figoure out the Posts permalink
 	mon := fmt.Sprintf("%02d", d.Month())
 	day := fmt.Sprintf("%02d", d.Day())
 	year := fmt.Sprintf("%02d", d.Year())
 	name := replaceExt(f, ".html")
 	post["id"] = filepath.Join(year, mon, day, f) // TODO try to remember why I need this field
-	post["url"]= filepath.Join(year, mon, day, name[11:])
+	post["url"] = filepath.Join(year, mon, day, name[11:])
 
 	return post, nil
 }
@@ -59,7 +60,7 @@ func parsePostName(fn string) (name string, date time.Time, err error) {
 		err = ErrBadPostName
 		return
 	}
-	date, err = time.Parse("2006-01-02", fn[:10])
+	date, err = time.Parse("2006/01/02", fn[:10])
 	if err != nil {
 		return
 	}
