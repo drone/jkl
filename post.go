@@ -45,7 +45,7 @@ func ParsePost(fn string) (Page, error) {
 	year := fmt.Sprintf("%02d", d.Year())
 	name := replaceExt(f, ".html")
 	post["id"] = filepath.Join(year, mon, day, f) // TODO try to remember why I need this field
-	post["url"] = filepath.Join(year, mon, day, name[11:])
+	post["url"] = filepath.Join(year, mon, day, name)
 
 	return post, nil
 }
