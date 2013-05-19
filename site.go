@@ -276,20 +276,23 @@ func (s *Site) writeStatic() error {
 func (s *Site) calculateCategories() {
 
 	categories := make(map[string][]Page)
+	pages := []Page{}
+	pages = append(pages, s.pages...)
+	pages = append(pages, s.posts...)
 
 	//Assuming that posts is sorted from most recent to least recent.
-	max_post := 600
-	if len(s.posts) < max_post {
-		max_post = len(s.posts)
+	max_post := 1200
+	if len(pages) < max_post {
+		max_post = len(pages)
 	}
 
-	latest_posts := s.posts[:max_post]
-	for _, post := range latest_posts {
-		for _, category := range post.GetCategories() {
+	latest_pages := pages[:max_post]
+	for _, page := range latest_pages {
+		for _, category := range page.GetCategories() {
 			if posts, ok := categories[category]; ok == true {
-				categories[category] = append(posts, post)
+				categories[category] = append(posts, page)
 			} else {
-				categories[category] = []Page{post}
+				categories[category] = []Page{page}
 			}
 		}
 	}
