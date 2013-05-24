@@ -319,7 +319,7 @@ func (p Page) GetIntrotext() (intro string) {
 			max_chars = len(intro)
 		}
 		intro = strings.TrimSpace(intro[:max_chars])
-		intro = intro[0:strings.LastIndex(intro, " ")]
+		//		intro = intro[0:strings.LastIndex(intro, " ")]
 		intro = strings.Replace(intro, "\n\n", "</p>\n<p>", -1)
 	}
 
