@@ -64,7 +64,7 @@ func parsePage(fn string, c []byte) (Page, error) {
 	// according to spec, Jekyll allows user to enter either category or
 	// categories. Convert single category to string array to be consistent ...
 	if category := page.GetString("category"); category != "" {
-		page["categories"] = []string{category}
+		page["categories"] = []interface{}{page["category"]}
 		delete(page, "category")
 	}
 
