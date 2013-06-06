@@ -352,8 +352,8 @@ func getSubArr(word []string, arr []string) bool {
 }
 
 func (s *Site) SetMinuteByMinute() {
-	max_post := 600
-	minbymin := []string{"Autor", "Publicidad"}
+	max_post := 60
+	minbymin := []string{"Autor", "Publicidad","Publicidad2","Publicidad3" }
 	min_posts := []Page{}
 	if len(s.posts) < max_post {
 		max_post = len(s.posts)
