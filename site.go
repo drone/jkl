@@ -236,6 +236,7 @@ func (s *Site) writePages() error {
 
 		//data passed in to each template
 		data := map[string]interface{}{
+			"s":    s,
 			"site": s.Conf,
 			"page": page,
 		}
@@ -387,6 +388,11 @@ func (s *Site) getPostByAuthor() {
 	}
 
 	s.Conf.Set("postByAuthor", small_autor)
+}
+
+func (s *Site) PagesForCategory(cat string, max_pages int) []Page {
+	categories := s.Conf.Get("categories").(map[string][]Page)
+	return cutArr(categories[cat], max_pages)
 }
 
 func cutArr(news []Page, max_post int) []Page {
