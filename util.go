@@ -41,6 +41,7 @@ func isHiddenOrTemp(fn string) bool {
 	base := filepath.Base(fn)
 	return strings.HasPrefix(base, ".") ||
 		strings.HasPrefix(fn, ".") ||
+		strings.HasPrefix(base, "#") ||
 		strings.HasSuffix(base, "~") ||
 		fn == "README.md"
 }
