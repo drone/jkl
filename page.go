@@ -307,20 +307,17 @@ func (p Page) GetIntrotext() (intro string) {
 		intro = p.GetString("introtext")
 	} else {
 		intro = p["content"].(string)
-		r, _ := regexp.Compile(`<img (.*?) />`) //eliminate the images,
+		r, _ := regexp.Compile(`<.*?>`) //eliminate the tags,
 		intro = r.ReplaceAllString(intro, "")
-		r, _ = regexp.Compile(`<.*?>`) //eliminate the images,
-		intro = r.ReplaceAllString(intro, "")
-		r, _ = regexp.Compile(`</.*?>`) //eliminate the images,
-		intro = r.ReplaceAllString(intro, "")
-
-		max_chars := 300
-		if len(intro) < max_chars {
-			max_chars = len(intro)
-		}
-		intro = strings.TrimSpace(intro[:max_chars])
-		//		intro = intro[0:strings.LastIndex(intro, " ")]
 		intro = strings.Replace(intro, "\n\n", "</p>\n<p>", -1)
+
+		max_words := 29
+		words := strings.Fields(intro)
+		if len(words) > max_words {
+			words = words[:max_words]
+		}
+
+		intro = strings.Join(words, " ")
 	}
 
 	return
