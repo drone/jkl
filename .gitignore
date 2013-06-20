@@ -17,8 +17,8 @@ _test
 _cgo_defun.c
 _cgo_gotypes.go
 _cgo_export.*
-
+_posts
 _testmain.go
 
 *.exe
-jkl
+

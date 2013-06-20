@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -20,13 +19,15 @@ var (
 )
 
 type Site struct {
-	Src    string  // Directory where Jekyll will look to transform files
-	Dest   string  // Directory where Jekyll will write files to
-	Conf   Config  // Configuration date from the _config.yml file
+	Src       string // Directory where Jekyll will look to transform files
+	Dest      string // Directory where Jekyll will write files to
+	Conf      Config // Configuration date from the _config.yml file
+	Something string
 
-	posts []Page   // Posts thet need to be generated
-	pages []Page   // Pages that need to be generated
-	files []string // Static files to get copied to the destination
+	posts []Page // Posts thet need to be generated
+	pages []Page // Pages that need to be generated
+
+	files []string           // Static files to get copied to the destination
 	templ *template.Template // Compiled templates
 }
 
@@ -40,10 +41,10 @@ func NewSite(src, dest string) (*Site, error) {
 		return nil, err
 	}
 
-	site := Site {
-		Src  : src,
-		Dest : dest,
-		Conf : conf,
+	site := Site{
+		Src:  src,
+		Dest: dest,
+		Conf: conf,
 	}
 
 	// Recursively process all files in the source directory
@@ -79,12 +80,20 @@ func (s *Site) Generate() error {
 
 	// Remove previously generated site, and then (re)create the
 	// destination directory
-	if err := s.Clear(); err != nil { return err }
-	if err := s.Prep() ; err != nil { return err }
+	if err := s.Clear(); err != nil {
+		return err
+	}
+	if err := s.Prep(); err != nil {
+		return err
+	}
 
 	// Generate all Pages and Posts and static files
-	if err := s.writePages() ; err != nil { return err }
-	if err := s.writeStatic(); err != nil { return err }
+	if err := s.writePages(); err != nil {
+		return err
+	}
+	if err := s.writeStatic(); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -108,11 +117,11 @@ func (s *Site) Deploy(user, pass, url string) error {
 		if err != nil {
 			return err
 		}
-		
+
 		// try to upload the file ... sometimes this fails due to amazon
 		// issues. If so, we'll re-try
 		if err := b.Put(rel, content, typ, s3.PublicRead); err != nil {
-			time.Sleep(100*time.Millisecond) // sleep so that we don't immediately retry
+			time.Sleep(100 * time.Millisecond) // sleep so that we don't immediately retry
 			return b.Put(rel, content, typ, s3.PublicRead)
 		}
 
@@ -136,37 +145,43 @@ func (s *Site) read() error {
 
 		rel, _ := filepath.Rel(s.Src, fn)
 		switch {
-		case err != nil :
+		case err != nil:
 			return nil
 
 		// Ignore directories
-		case fi.IsDir() :
+		case fi.IsDir():
 			return nil
 
 		// Ignore Hidden or Temp files
 		// (starting with . or ending with ~)
-		case isHiddenOrTemp(rel) :
+		case isHiddenOrTemp(rel):
 			return nil
 
 		// Parse Templates
-		case isTemplate(rel) :
+		case isTemplate(rel):
 			layouts = append(layouts, fn)
 
 		// Parse Posts
-		case isPost(rel) :
+		case isPost(rel):
 			post, err := ParsePost(rel)
-			if err != nil { return err }
-			// TODO: this is a hack to get the posts in rev chronological order
-			s.posts = append([]Page{post}, s.posts...)//s.posts, post)
+			if err != nil {
+				return err
+			}
+			if post["published"] == true {
+				// TODO: this is a hack to get the posts in rev chronological order
+				s.posts = append([]Page{post}, s.posts...) //s.posts, post)
+			}
 
 		// Parse Pages
-		case isPage(rel) :
+		case isPage(rel):
 			page, err := ParsePage(rel)
-			if err != nil { return err }
+			if err != nil {
+				return err
+			}
 			s.pages = append(s.pages, page)
 
 		// Move static files, no processing required
-		case isStatic(rel) :
+		case isStatic(rel):
 			s.files = append(s.files, rel)
 		}
 		return nil
@@ -189,9 +204,13 @@ func (s *Site) read() error {
 	// Add the posts, timestamp, etc to the Site Params
 	s.Conf.Set("posts", s.posts)
 	s.Conf.Set("time", time.Now())
-	s.calculateTags()
-	s.calculateCategories()
 
+	s.calculateTags()
+	s.calculateLocations()
+	s.calculateCategories()
+	s.SetMinuteByMinute()
+	s.calculateAuthors()
+	s.getPostByAuthor()
 	return nil
 }
 
@@ -208,11 +227,6 @@ func (s *Site) writePages() error {
 
 	for _, page := range pages {
 		url := page.GetUrl()
-		layout := page.GetLayout()
-		
-
-		// is the layout provided? or is it nil /empty?
-		//layoutNil := layout == "" || layout == "nil"
 
 		// make sure the posts's parent dir exists
 		d := filepath.Join(s.Dest, filepath.Dir(url))
@@ -221,54 +235,16 @@ func (s *Site) writePages() error {
 			return err
 		}
 
-		// if markdown, need to convert to html
-		// otherwise just convert raw html to a string
-		//var content string
-		//if isMarkdown(page.GetExt()) {
-		//	content = string(blackfriday.MarkdownCommon(raw))
-		//} else {
-		//	content = string(raw)
-		//}
-
 		//data passed in to each template
-		data := map[string]interface{} {
+		data := map[string]interface{}{
+			"s":    s,
 			"site": s.Conf,
 			"page": page,
 		}
 
-		// treat all non-markdown pages as templates
-		content := page.GetContent()
-		if isMarkdown(page.GetExt()) == false {
-			// this code will add the page to the list of templates,
-			// will execute the template, and then set the content
-			// to the rendered template
-			t, err := s.templ.New(url).Parse(content);
-			if err != nil { return err }
-			var buf bytes.Buffer
-			err = t.ExecuteTemplate(&buf, url, data);
-			if err != nil { return err }
-			content = buf.String()
-		}
-
-		// add document body to the map
-		data["content"] = content
-
-
-
-		// write the template to a buffer
-		// NOTE: if template is nil or empty, then we should parse the
-		//       content as if it were a template
-		var buf bytes.Buffer
-		if layout == "" || layout == "nil" {
-			//t, err := s.templ.New(url).Parse(content);
-			//if err != nil { return err }
-			//err = t.ExecuteTemplate(&buf, url, data);
-			//if err != nil { return err }
-
-			buf.WriteString(content)
-		} else {
-			layout = appendExt(layout, ".html")
-			s.templ.ExecuteTemplate(&buf, layout, data)
+		buf, err := page.RenderTemplate(s, data)
+		if err != nil {
+			return err
 		}
 
 		logf(MsgGenerateFile, url)
@@ -277,7 +253,7 @@ func (s *Site) writePages() error {
 		}
 	}
 
-	return nil	
+	return nil
 }
 
 // Helper function to write all static files to the destination directory
@@ -287,7 +263,7 @@ func (s *Site) writeStatic() error {
 
 	for _, file := range s.files {
 		from := filepath.Join(s.Src, file)
-		to   := filepath.Join(s.Dest, file)
+		to := filepath.Join(s.Dest, file)
 		logf(MsgCopyingFile, file)
 		if err := copyTo(from, to); err != nil {
 			return err
@@ -297,17 +273,55 @@ func (s *Site) writeStatic() error {
 	return nil
 }
 
-// Helper function to aggregate a list of all categories and their
+// Helper function to aggregate a list of posts of location anxod their
+// related posts.
+func (s *Site) calculateLocations() {
+
+	locations := make(map[string][]Page)
+	pages := []Page{}
+	pages = append(pages, s.posts...)
+
+	//Assuming that posts is sorted from most recent to least recent.
+	max_post := 1200
+	if len(pages) < max_post {
+		max_post = len(pages)
+	}
+
+	latest_pages := pages[:max_post]
+	for _, page := range latest_pages {
+		location := page.GetLocation()
+		if posts, ok := locations[location]; ok == true {
+			locations[location] = append(posts, page)
+		} else {
+			locations[location] = []Page{page}
+		}
+	}
+
+	s.Conf.Set("locations", locations)
+}
+
+// Helper function to aggregate a list of all categories anxod their
 // related posts.
 func (s *Site) calculateCategories() {
 
 	categories := make(map[string][]Page)
-	for _, post := range s.posts {
-		for _, category := range post.GetCategories() {
-			if posts, ok := categories[category]; ok == false {
-				categories[category] = append(posts, post)
+	pages := []Page{}
+	pages = append(pages, s.pages...)
+	pages = append(pages, s.posts...)
+
+	//Assuming that posts is sorted from most recent to least recent.
+	max_post := 1200
+	if len(pages) < max_post {
+		max_post = len(pages)
+	}
+
+	latest_pages := pages[:max_post]
+	for _, page := range latest_pages {
+		for _, category := range page.GetCategories() {
+			if posts, ok := categories[category]; ok == true {
+				categories[category] = append(posts, page)
 			} else {
-				categories[category] = []Page{ post }
+				categories[category] = []Page{page}
 			}
 		}
 	}
@@ -322,13 +336,100 @@ func (s *Site) calculateTags() {
 	tags := make(map[string][]Page)
 	for _, post := range s.posts {
 		for _, tag := range post.GetTags() {
-			if posts, ok := tags[tag]; ok == false {
+			if posts, ok := tags[tag]; ok == true {
 				tags[tag] = append(posts, post)
 			} else {
-				tags[tag] = []Page{ post }
+				tags[tag] = []Page{post}
 			}
 		}
 	}
 
 	s.Conf.Set("tags", tags)
+}
+
+func (s *Site) calculateAuthors() {
+
+	authors := make(map[string]string)
+	for _, post := range s.posts {
+		author := post.GetAuthor()
+		authors[author] = post.GetAuthorLink()
+	}
+	s.Conf.Set("authors", authors)
+}
+
+func getSubStr(word string, arr []string) bool {
+	flag := false
+	for i := 0; i < len(arr); i++ {
+		if word == arr[i] {
+			flag = true
+		}
+	}
+	return flag
+}
+
+func getSubArr(word []string, arr []string) bool {
+	flag := false
+	for i := 0; i < len(arr); i++ {
+		for j := 0; j < len(word); j++ {
+			if word[j] == arr[i] {
+				flag = true
+			}
+		}
+	}
+	return flag
+}
+
+func (s *Site) SetMinuteByMinute() {
+	max_post := 60
+	minbymin := []string{"Autor", "Publicidad", "Publicidad2", "Publicidad3"}
+	min_posts := []Page{}
+	if len(s.posts) < max_post {
+		max_post = len(s.posts)
+	}
+	latest_posts := s.posts[:max_post]
+	for _, post := range latest_posts {
+
+		if !getSubArr(post.GetCategories(), minbymin) {
+			min_posts = append(min_posts, post)
+		}
+
+	}
+
+	s.Conf.Set("MinuteByMinute", min_posts)
+	categories := s.Conf.Get("categories").(map[string][]Page)
+	categories["MinuteByMinute"] = min_posts
+	s.Conf.Set("categories", categories)
+}
+
+func (s *Site) getPostByAuthor() {
+	autor_posts := make(map[string][]Page)
+
+	for _, post := range s.posts {
+		if posts, ok := autor_posts[post.GetAuthor()]; ok == true {
+			autor_posts[post.GetAuthor()] = append(posts, post)
+		} else {
+			autor_posts[post.GetAuthor()] = []Page{post}
+		}
+	}
+
+	small_autor := make(map[string][]Page)
+
+	for autor_name, autor_news := range autor_posts {
+		small_autor[autor_name] = cutArr(autor_news, 30)
+	}
+
+	s.Conf.Set("postByAuthor", small_autor)
+}
+
+func (s *Site) PagesForCategory(cat string, max_pages int) []Page {
+	categories := s.Conf.Get("categories").(map[string][]Page)
+	return cutArr(categories[cat], max_pages)
+}
+
+func cutArr(news []Page, max_post int) []Page {
+	if len(news) < max_post {
+		max_post = len(news)
+	}
+	return news[:max_post]
+
 }
