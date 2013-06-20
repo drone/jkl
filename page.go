@@ -206,6 +206,11 @@ func (p Page) GetAuthorLink() string {
 	return p.GetString("authorlink")
 }
 
+// Gets the location to which this post belongs.
+func (p Page) GetLocation() string {
+	return p.GetString("location")
+}
+
 // Gets the list of categories to which this post belongs.
 func (p Page) GetCategories() []string {
 	return p.GetStrings("categories")

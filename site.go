@@ -206,6 +206,7 @@ func (s *Site) read() error {
 	s.Conf.Set("time", time.Now())
 
 	s.calculateTags()
+	s.calculateLocations()
 	s.calculateCategories()
 	s.SetMinuteByMinute()
 	s.calculateAuthors()
@@ -270,6 +271,33 @@ func (s *Site) writeStatic() error {
 	}
 
 	return nil
+}
+
+// Helper function to aggregate a list of posts of location anxod their
+// related posts.
+func (s *Site) calculateLocations() {
+
+	locations := make(map[string][]Page)
+	pages := []Page{}
+	pages = append(pages, s.posts...)
+
+	//Assuming that posts is sorted from most recent to least recent.
+	max_post := 1200
+	if len(pages) < max_post {
+		max_post = len(pages)
+	}
+
+	latest_pages := pages[:max_post]
+	for _, page := range latest_pages {
+		location := page.GetLocation()
+		if posts, ok := locations[location]; ok == true {
+			locations[location] = append(posts, page)
+		} else {
+			locations[location] = []Page{page}
+		}
+	}
+
+	s.Conf.Set("locations", locations)
 }
 
 // Helper function to aggregate a list of all categories anxod their
