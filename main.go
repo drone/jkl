@@ -86,7 +86,9 @@ func main() {
 	}
 
 	// Set any site variables that were overriden / provided in the cli args
-	if *baseurl != "" || site.Conf.Get("baseurl") == nil { site.Conf.Set("baseurl", *baseurl) }
+	if *baseurl != "" || site.Conf.Get("baseurl") == nil {
+		site.Conf.Set("baseurl", *baseurl)
+	}
 
 	// Generate the static website
 	if err := site.Generate(); err != nil {
@@ -181,7 +183,7 @@ func watch(site *Site) {
 		case ev := <-watcher.Event:
 			// Ignore changes to the _site directoy, hidden, or temp files
 			if !strings.HasPrefix(ev.Name, site.Dest) && !isHiddenOrTemp(ev.Name) {
-				fmt.Println("Event:", ev.Name)
+				fmt.Println("Event: ", ev.String())
 				recompile(site)
 			}
 		case err := <-watcher.Error:
@@ -193,8 +195,16 @@ func watch(site *Site) {
 func recompile(site *Site) {
 	mu.Lock()
 	defer mu.Unlock()
-	site.Reload()
-	site.Generate()
+
+	if err := site.Reload(); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if err := site.Generate(); err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 func logf(msg string, args ...interface{}) {
