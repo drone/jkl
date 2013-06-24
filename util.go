@@ -2,9 +2,9 @@ package main
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"os/exec"
-	"io"
 	"path/filepath"
 	"strings"
 )
@@ -12,8 +12,10 @@ import (
 // Appends the extension to the specified file. If the file already has the
 // desired extension no changes are made.
 func appendExt(fn, ext string) string {
-	if strings.HasSuffix(fn, ext) { return fn }
-	return fn + ext	
+	if strings.HasSuffix(fn, ext) {
+		return fn
+	}
+	return fn + ext
 }
 
 // Copies a file to the specified directory. It will also create any necessary
@@ -30,28 +32,28 @@ func copyTo(from, to string) error {
 
 // Returns True if a file has YAML front-end matter.
 func hasMatter(fn string) bool {
-	sample, _ := sniff(fn, 4)
+	sample, _ := sniff(strings.TrimLeft(fn, " \t\n"), 4)
 	return bytes.Equal(sample, []byte("---\n"))
 }
 
 // Returns True if the file is a temp file (starts with . or ends with ~).
 func isHiddenOrTemp(fn string) bool {
 	base := filepath.Base(fn)
-	return strings.HasPrefix(base, ".") || 
-				strings.HasPrefix(fn, ".") ||
-				strings.HasSuffix(base, "~") ||
-				fn == "README.md"
+	return strings.HasPrefix(base, ".") ||
+		strings.HasPrefix(fn, ".") ||
+		strings.HasSuffix(base, "~") ||
+		fn == "README.md"
 }
 
 // Returns True if the file is a template. This is determine by the files
 // parent directory (_layout or _include) and the file type (markdown).
 func isTemplate(fn string) bool {
 	switch {
-	case !isHtml(fn) :
+	case !isHtml(fn):
 		return false
-	case strings.HasPrefix(fn, "_layouts") :
+	case strings.HasPrefix(fn, "_layouts"):
 		return true
-	case strings.HasPrefix(fn, "_includes") :
+	case strings.HasPrefix(fn, "_includes"):
 		return true
 	}
 	return false
@@ -61,7 +63,7 @@ func isTemplate(fn string) bool {
 // TODO change this to isMarkup and add .xml, .rss, .atom
 func isHtml(fn string) bool {
 	switch filepath.Ext(fn) {
-	case ".html", ".htm", ".xml", ".rss", ".atom" :
+	case ".html", ".htm", ".xml", ".rss", ".atom":
 		return true
 	}
 	return false
@@ -70,7 +72,7 @@ func isHtml(fn string) bool {
 // Returns True if the markup is Markdown.
 func isMarkdown(fn string) bool {
 	switch filepath.Ext(fn) {
-	case ".md", ".markdown" :
+	case ".md", ".markdown":
 		return true
 	}
 	return false
@@ -79,11 +81,11 @@ func isMarkdown(fn string) bool {
 // Returns True if the specified file is a Page.
 func isPage(fn string) bool {
 	switch {
-	case strings.HasPrefix(fn, "_") :
+	case strings.HasPrefix(fn, "_"):
 		return false
-	case !isMarkdown(fn) && !isHtml(fn) :
+	case !isMarkdown(fn) && !isHtml(fn):
 		return false
-	case !hasMatter(fn) :
+	case !hasMatter(fn):
 		return false
 	}
 	return true
@@ -92,11 +94,11 @@ func isPage(fn string) bool {
 // Returns True if the specified file is a Post.
 func isPost(fn string) bool {
 	switch {
-	case !strings.HasPrefix(fn, "_posts") :
+	case !strings.HasPrefix(fn, "_posts"):
 		return false
-	case !isMarkdown(fn) :
+	case !isMarkdown(fn):
 		return false
-	case !hasMatter(fn) :
+	case !hasMatter(fn):
 		return false
 	}
 	return true
@@ -116,7 +118,7 @@ func dirs(path string) (paths []string) {
 	site := filepath.Join(path, "_site")
 	filepath.Walk(path, func(fn string, fi os.FileInfo, err error) error {
 		switch {
-		case err != nil :
+		case err != nil:
 			return nil
 		case fi.IsDir() == false:
 			return nil
@@ -134,7 +136,7 @@ func dirs(path string) (paths []string) {
 // Removes the files extension. If the file has no extension the string is
 // returned without modification.
 func removeExt(fn string) string {
-	if ext := filepath.Ext(fn); len(ext)>0 {
+	if ext := filepath.Ext(fn); len(ext) > 0 {
 		return fn[:len(fn)-len(ext)]
 	}
 	return fn
