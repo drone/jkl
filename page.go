@@ -2,13 +2,12 @@ package main
 
 import (
 	"bytes"
+	"github.com/russross/blackfriday"
 	"io"
 	"io/ioutil"
 	"launchpad.net/goyaml"
 	"path/filepath"
 	"strings"
-
-	"github.com/russross/blackfriday"
 )
 
 // A Page represents the key-value pairs in a page or posts front-end YAML as
@@ -28,7 +27,7 @@ func ParsePage(fn string) (Page, error) {
 // Helper function that creates a new Page from a byte array, parsing the
 // front-end YAML and the markup, and pre-calculating all page-level variables.
 func parsePage(fn string, c []byte) (Page, error) {
-	
+
 	page, err := parseMatter(c) //map[string] interface{} { }
 	if err != nil {
 		return nil, err
@@ -63,7 +62,7 @@ func parsePage(fn string, c []byte) (Page, error) {
 	// according to spec, Jekyll allows user to enter either category or
 	// categories. Convert single category to string array to be consistent ...
 	if category := page.GetString("category"); category != "" {
-		page["categories"] = []string{ category }
+		page["categories"] = []string{category}
 		delete(page, "category")
 	}
 
@@ -72,7 +71,7 @@ func parsePage(fn string, c []byte) (Page, error) {
 
 // Helper function to parse the front-end yaml matter.
 func parseMatter(content []byte) (Page, error) {
-	page := map[string] interface{} { }
+	page := map[string]interface{}{}
 	err := goyaml.Unmarshal(content, &page)
 	return page, err
 }
@@ -88,7 +87,8 @@ func parseContent(content []byte) []byte {
 
 	//read each line of the file and read the markdown section
 	//which is the second document stream in the yaml file
-	parse : for {
+parse:
+	for {
 		line, err := b.ReadString('\n')
 		switch {
 		case err == io.EOF && streams >= 2:
@@ -96,11 +96,11 @@ func parseContent(content []byte) []byte {
 			break parse
 		case err == io.EOF:
 			break parse
-		case err != nil :
+		case err != nil:
 			return nil
 		case streams >= 2:
 			m.WriteString(line)
-		case strings.HasPrefix(line, "---") :
+		case strings.HasPrefix(line, "---"):
 			streams++
 		}
 	}
@@ -129,8 +129,17 @@ func (p Page) GetString(key string) (str string) {
 // Gets a parameter value as a string array.
 func (p Page) GetStrings(key string) (strs []string) {
 	if v, ok := p[key]; ok {
-		for _, s := range v.([]interface{}) {
-			strs = append(strs, s.(string))
+		switch v.(type) {
+		case []interface{}:
+			for _, s := range v.([]interface{}) {
+				strs = append(strs, s.(string))
+			}
+		case string:
+			for _, s := range strings.Split(v.(string), ",") {
+				if x := strings.TrimSpace(s); len(x) > 0 {
+					strs = append(strs, x)
+				}
+			}
 		}
 	}
 	return
@@ -183,4 +192,3 @@ func (p Page) GetTags() []string {
 func (p Page) GetCategories() []string {
 	return p.GetStrings("categories")
 }
-
