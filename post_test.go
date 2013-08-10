@@ -126,6 +126,17 @@ func TestEmptyCategories(t *testing.T) {
 	}
 }
 
+func TestUnicodeCategories(t *testing.T) {
+	date, _ := time.Parse("2006-01-02", "2013-11-01")
+	categories := []string{"áãàâäçéèëíìïóòôöúùûü"}
+	url := getPostUrl("my-blog", date, categories, "/:categories/:title/")
+
+	if (url != "/aaaaaceeeiiioooouuuu/my-blog/") {
+		t.Errorf("Expected url [/my-blog/] got [%s]", url)
+	}
+}
+
+
 // The 'date' permalink is a shortcut to /:categories/:year/:month/:day/:title.html
 func TestDateBuiltinPermakink(t *testing.T) {
 	date, _ := time.Parse("2006-01-02", "2013-11-01")

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	"github.com/opesun/slugify"
+	"github.com/extemporalgenome/slug"
 )
 
 var (
@@ -32,7 +32,7 @@ func getPostUrl(title string, date time.Time, categories []string, permalink str
 	url = strings.Replace(url, ":i_day", fmt.Sprintf("%d", date.Day()), -1)
 
 	for i, value := range categories {
-		categories[i] = slugify.S(value)
+		categories[i] = slug.Slug(value)
 	}
 	url = strings.Replace(url, ":categories", strings.Join(categories, "/"), -1)
 	url = strings.Replace(url, "//", "/", -1)
