@@ -9,6 +9,7 @@ import (
 	"mime"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 	"time"
 )
@@ -162,7 +163,8 @@ func (s *Site) read() error {
 
 		// Parse Posts
 		case isPost(rel):
-			post, err := ParsePost(rel)
+			permalink := s.Conf.GetString("permalink")
+			post, err := ParsePost(rel, permalink)
 			if err != nil {
 				return err
 			}
@@ -221,6 +223,9 @@ func (s *Site) writePages() error {
 
 	for _, page := range pages {
 		url := page.GetUrl()
+		if (strings.HasSuffix(url, "/")) {
+			url += "index.html"
+		}
 		layout := page.GetLayout()
 
 		// is the layout provided? or is it nil /empty?
