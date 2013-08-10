@@ -164,6 +164,12 @@ func (s *Site) read() error {
 		// Parse Posts
 		case isPost(rel):
 			permalink := s.Conf.GetString("permalink")
+			if (permalink == "") {
+				// According to Jekyll documentation 'date' is the
+				// default permalink
+				permalink = "date"
+			}
+
 			post, err := ParsePost(rel, permalink)
 			if err != nil {
 				return err

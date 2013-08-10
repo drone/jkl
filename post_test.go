@@ -126,3 +126,35 @@ func TestEmptyCategories(t *testing.T) {
 	}
 }
 
+// The 'date' permalink is a shortcut to /:categories/:year/:month/:day/:title.html
+func TestDateBuiltinPermakink(t *testing.T) {
+	date, _ := time.Parse("2006-01-02", "2013-11-01")
+	categories := []string{"go"}
+	url := getPostUrl("unit-tests", date, categories, "date")
+
+	if (url != "/go/2013/11/01/unit-tests.html") {
+		t.Errorf("Expected url [/go/2013/11/01/unit-tests.html] got [%s]", url)
+	}
+}
+
+// The 'pretty' permalink is a shortcut to /:categories/:year/:month/:day/:title/
+func TestPrettyBuiltinPermakink(t *testing.T) {
+	date, _ := time.Parse("2006-01-02", "2013-11-01")
+	categories := []string{"go"}
+	url := getPostUrl("unit-tests", date, categories, "pretty")
+
+	if (url != "/go/2013/11/01/unit-tests/") {
+		t.Errorf("Expected url [/go/2013/11/01/unit-tests/] got [%s]", url)
+	}
+}
+
+// The 'none' permalink is a shortcut to /:categories/:title.html
+func TestNoneBuiltinPermakink(t *testing.T) {
+	date, _ := time.Parse("2006-01-02", "2013-11-01")
+	categories := []string{"go"}
+	url := getPostUrl("unit-tests", date, categories, "none")
+
+	if (url != "/go/unit-tests.html") {
+		t.Errorf("Expected url [/go/unit-tests.html] got [%s]", url)
+	}
+}

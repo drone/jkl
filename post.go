@@ -14,6 +14,15 @@ var (
 )
 
 func getPostUrl(title string, date time.Time, categories []string, permalink string) (url string) {
+	switch permalink {
+		case "date":
+			permalink = "/:categories/:year/:month/:day/:title.html"
+		case "pretty":
+			permalink = "/:categories/:year/:month/:day/:title/"
+		case "none":
+			permalink = "/:categories/:title.html"
+	}
+
 	url = permalink
 	url = strings.Replace(url, ":title", title, -1)
 	url = strings.Replace(url, ":year", fmt.Sprintf("%02d", date.Year()), -1)
