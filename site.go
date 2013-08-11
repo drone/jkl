@@ -147,6 +147,9 @@ func (s *Site) read() error {
 		case err != nil:
 			return nil
 
+		case fi.IsDir() && isHiddenOrTemp(fn):
+			return filepath.SkipDir
+
 		// Ignore directories
 		case fi.IsDir():
 			return nil
