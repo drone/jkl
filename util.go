@@ -120,6 +120,8 @@ func dirs(path string) (paths []string) {
 		switch {
 		case err != nil:
 			return nil
+		case fi.IsDir() && isHiddenOrTemp(fn):
+			return filepath.SkipDir
 		case fi.IsDir() == false:
 			return nil
 		case strings.HasPrefix(fn, site):
