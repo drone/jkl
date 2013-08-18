@@ -11,6 +11,7 @@ var funcMap = map[string]interface{} {
 	"capitalize"        : capitalize,
 	"date_to_string"    : dateToString,
 	"date_to_xmlschema" : dateToXmlSchema,
+        "date_to_rfc822"    : dateToRfc822,
 	"downcase"          : lower,
 	"eq"                : eq,
 	"newline_to_br"     : newlineToBreak,
@@ -43,6 +44,11 @@ func dateToString(date time.Time) string {
 // Converts a date to a string
 func dateToXmlSchema(date time.Time) string { 
 	return date.Format(time.RFC3339)
+}
+
+// Converts a date to a string
+func dateToRfc822(date time.Time) string { 
+	return date.Format(time.RFC822)
 }
 
 // Convert an input string to lowercase
