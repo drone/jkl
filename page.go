@@ -121,7 +121,10 @@ func (p Page) Get(key string) interface{} {
 // Gets a parameter value as a string. If none exists return an empty string.
 func (p Page) GetString(key string) (str string) {
 	if v, ok := p[key]; ok {
-		str = v.(string)
+		switch v.(type) {
+		case string:
+			str = v.(string)
+		}
 	}
 	return
 }
