@@ -314,14 +314,13 @@ func (p Page) GetIntrotext() (intro string) {
 		intro = p["content"].(string)
 		r, _ := regexp.Compile(`<.*?>`) //eliminate the tags,
 		intro = r.ReplaceAllString(intro, "")
-		intro = strings.Replace(intro, "\n\n", "</p>\n<p>", -1)
+		intro = strings.Replace(intro, "\n\n", "<br /><br />", -1)
 
-		max_words := 29
+		max_words := 49
 		words := strings.Fields(intro)
 		if len(words) > max_words {
 			words = words[:max_words]
 		}
-
 		intro = strings.Join(words, " ")
 	}
 
