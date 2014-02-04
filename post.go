@@ -6,15 +6,42 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"github.com/extemporalgenome/slug"
 )
 
 var (
 	ErrBadPostName = errors.New("Invalid post name. Expecting format YYYY-MM-DD-name-of-post.markdown")
 )
 
+func getPostUrl(title string, date time.Time, categories []string, permalink string) (url string) {
+	switch permalink {
+		case "date":
+			permalink = "/:categories/:year/:month/:day/:title.html"
+		case "pretty":
+			permalink = "/:categories/:year/:month/:day/:title/"
+		case "none":
+			permalink = "/:categories/:title.html"
+	}
+
+	url = permalink
+	url = strings.Replace(url, ":title", title, -1)
+	url = strings.Replace(url, ":year", fmt.Sprintf("%02d", date.Year()), -1)
+	url = strings.Replace(url, ":month", fmt.Sprintf("%02d", date.Month()), -1)
+	url = strings.Replace(url, ":i_month", fmt.Sprintf("%d", date.Month()), -1)
+	url = strings.Replace(url, ":day", fmt.Sprintf("%02d", date.Day()), -1)
+	url = strings.Replace(url, ":i_day", fmt.Sprintf("%d", date.Day()), -1)
+
+	for i, value := range categories {
+		categories[i] = slug.Slug(value)
+	}
+	url = strings.Replace(url, ":categories", strings.Join(categories, "/"), -1)
+	url = strings.Replace(url, "//", "/", -1)
+	return url
+}
+
 // ParseParse will parse a file with front-end YAML and markup content, and
 // return a key-value Post structure.
-func ParsePost(fn string) (Page, error) {
+func ParsePost(fn string, permalink string) (Page, error) {
 	post, err := ParsePage(fn)
 	if err != nil {
 		return nil, err
@@ -34,13 +61,9 @@ func ParsePost(fn string) (Page, error) {
 		post["title"] = t
 	}
 
-	// figoure out the Posts permalink
-	mon := fmt.Sprintf("%02d", d.Month())
-	day := fmt.Sprintf("%02d", d.Day())
-	year := fmt.Sprintf("%02d", d.Year())
-	name := replaceExt(f, ".html")
-	post["id"] = filepath.Join(year, mon, day, f) // TODO try to remember why I need this field
-	post["url"]= filepath.Join(year, mon, day, name[11:])
+	// Figure out the Posts permalink
+	title := replaceExt(f, "")[11:]
+	post["url"] = getPostUrl(title, d, post.GetCategories(), permalink)
 
 	return post, nil
 }

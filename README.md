@@ -38,6 +38,7 @@ go get launchpad.net/goyaml
 go get launchpad.net/goamz/aws
 go get launchpad.net/goamz/s3
 go get github.com/howeyc/fsnotify
+go get github.com/extemporalgenome/slug
 ```
 Once you have compiled `jkl` you can install with the following command:
 
