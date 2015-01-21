@@ -21,7 +21,7 @@ func ParsePost(fn string) (Page, error) {
 	}
 
 	// parse the Date and Title from the post's file name
-	_,f := filepath.Split(fn)
+	_, f := filepath.Split(fn)
 	t, d, err := parsePostName(f)
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func ParsePost(fn string) (Page, error) {
 	year := fmt.Sprintf("%02d", d.Year())
 	name := replaceExt(f, ".html")
 	post["id"] = filepath.Join(year, mon, day, f) // TODO try to remember why I need this field
-	post["url"]= filepath.Join(year, mon, day, name[11:])
+	post["url"] = filepath.Join(year, mon, day, name[11:])
 
 	return post, nil
 }

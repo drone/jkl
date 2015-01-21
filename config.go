@@ -42,7 +42,7 @@ func ParseConfig(path string) (Config, error) {
 }
 
 func parseConfig(data []byte) (Config, error) {
-	conf := map[string] interface{} { }
+	conf := map[string]interface{}{}
 	err := goyaml.Unmarshal(data, &conf)
 	if err != nil {
 		return nil, err
