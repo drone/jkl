@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"launchpad.net/goamz/aws"
-	"launchpad.net/goamz/s3"
 	"mime"
 	"os"
 	"path/filepath"
 	"text/template"
 	"time"
+
+	"launchpad.net/goamz/aws"
+	"launchpad.net/goamz/s3"
 )
 
 var (

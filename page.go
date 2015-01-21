@@ -2,12 +2,13 @@ package main
 
 import (
 	"bytes"
-	"github.com/russross/blackfriday"
 	"io"
 	"io/ioutil"
-	"launchpad.net/goyaml"
 	"path/filepath"
 	"strings"
+
+	"github.com/russross/blackfriday"
+	"launchpad.net/goyaml"
 )
 
 // A Page represents the key-value pairs in a page or posts front-end YAML as
