@@ -3,7 +3,7 @@ package main
 import (
 	"io/ioutil"
 
-	"launchpad.net/goyaml"
+	"gopkg.in/yaml.v1"
 )
 
 // Config represents the key-value pairs in a _config.yml file.
@@ -44,7 +44,7 @@ func ParseConfig(path string) (Config, error) {
 
 func parseConfig(data []byte) (Config, error) {
 	conf := map[string]interface{}{}
-	err := goyaml.Unmarshal(data, &conf)
+	err := yaml.Unmarshal(data, &conf)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func ParseDeployConfig(path string) (*DeployConfig, error) {
 
 func parseDeployConfig(data []byte) (*DeployConfig, error) {
 	conf := DeployConfig{}
-	err := goyaml.Unmarshal(data, &conf)
+	err := yaml.Unmarshal(data, &conf)
 	if err != nil {
 		return nil, err
 	}
