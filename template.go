@@ -6,23 +6,23 @@ import (
 )
 
 // Additional functions available in Jekyll templates
-var funcMap = map[string]interface{} {
+var funcMap = map[string]interface{}{
 
-	"capitalize"        : capitalize,
-	"date_to_string"    : dateToString,
-	"date_to_xmlschema" : dateToXmlSchema,
-	"downcase"          : lower,
-	"eq"                : eq,
-	"newline_to_br"     : newlineToBreak,
-	"replace"           : replace,
-	"replace_first"     : replaceFirst,
-	"remove"            : remove,
-	"remove_first"      : removeFirst,
-	"split"             : split,
-	"strip_newlines"    : stripNewlines,
-	"truncate"          : truncate,
-	"truncatewords"     : truncateWords,
-	"upcase"            : upper,
+	"capitalize":        capitalize,
+	"date_to_string":    dateToString,
+	"date_to_xmlschema": dateToXmlSchema,
+	"downcase":          lower,
+	"eq":                eq,
+	"newline_to_br":     newlineToBreak,
+	"replace":           replace,
+	"replace_first":     replaceFirst,
+	"remove":            remove,
+	"remove_first":      removeFirst,
+	"split":             split,
+	"strip_newlines":    stripNewlines,
+	"truncate":          truncate,
+	"truncatewords":     truncateWords,
+	"upcase":            upper,
 }
 
 // Capitalize words in the input sentence
@@ -31,17 +31,17 @@ func capitalize(s string) string {
 }
 
 // Checks if two values are equal
-func eq(v1 interface{}, v2 interface{}) bool { 
+func eq(v1 interface{}, v2 interface{}) bool {
 	return v1 == v2
 }
 
 // Converts a date to a string
-func dateToString(date time.Time) string { 
+func dateToString(date time.Time) string {
 	return date.Format("2006-01-02")
 }
 
 // Converts a date to a string
-func dateToXmlSchema(date time.Time) string { 
+func dateToXmlSchema(date time.Time) string {
 	return date.Format(time.RFC3339)
 }
 
@@ -86,15 +86,19 @@ func stripNewlines(s string) string {
 }
 
 // Truncate a string down to x characters
-func truncate(s string, x int) (string) { 
-	if len(s) > x { return s[0:x] }
+func truncate(s string, x int) string {
+	if len(s) > x {
+		return s[0:x]
+	}
 	return s
 }
 
 // Truncate a string down to x words
-func truncateWords(s string, x int) (string) {
+func truncateWords(s string, x int) string {
 	words := strings.Split(s, " ")
-	if len(words) <= x { return s }
+	if len(words) <= x {
+		return s
+	}
 	return strings.Join(words[0:x], " ")
 }
 

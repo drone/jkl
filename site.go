@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"launchpad.net/goamz/aws"
-	"launchpad.net/goamz/s3"
 	"mime"
 	"os"
 	"path/filepath"
 	"text/template"
 	"time"
+
+	"github.com/crowdmob/goamz/aws"
+	"github.com/crowdmob/goamz/s3"
 )
 
 var (
@@ -120,9 +121,9 @@ func (s *Site) Deploy(user, pass, url string) error {
 
 		// try to upload the file ... sometimes this fails due to amazon
 		// issues. If so, we'll re-try
-		if err := b.Put(rel, content, typ, s3.PublicRead); err != nil {
+		if err := b.Put(rel, content, typ, s3.PublicRead, s3.Options{}); err != nil {
 			time.Sleep(100 * time.Millisecond) // sleep so that we don't immediately retry
-			return b.Put(rel, content, typ, s3.PublicRead)
+			return b.Put(rel, content, typ, s3.PublicRead, s3.Options{})
 		}
 
 		// file upload was a success, return nil

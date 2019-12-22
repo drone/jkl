@@ -2,12 +2,13 @@ package main
 
 import (
 	"bytes"
-	"github.com/russross/blackfriday"
 	"io"
 	"io/ioutil"
-	"launchpad.net/goyaml"
 	"path/filepath"
 	"strings"
+
+	"github.com/russross/blackfriday"
+	"gopkg.in/yaml.v1"
 )
 
 // A Page represents the key-value pairs in a page or posts front-end YAML as
@@ -72,7 +73,7 @@ func parsePage(fn string, c []byte) (Page, error) {
 // Helper function to parse the front-end yaml matter.
 func parseMatter(content []byte) (Page, error) {
 	page := map[string]interface{}{}
-	err := goyaml.Unmarshal(content, &page)
+	err := yaml.Unmarshal(content, &page)
 	return page, err
 }
 
